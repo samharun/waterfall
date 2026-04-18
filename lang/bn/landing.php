@@ -69,6 +69,11 @@ return [
     'register_now' => 'এখন নিবন্ধন করুন',
     'login' => 'লগইন',
 
+    'footer_promo_title' => 'বিশুদ্ধ, সতেজ ও দ্রুত পানি ডেলিভারি',
+    'footer_promo_subtitle' => 'যেকোনো সময় আপনার দরজায় পরিষ্কার ও সতেজ পানি পৌঁছে দিন।',
+    'footer_promo_order_now' => 'এখন অর্ডার করুন',
+    'footer_promo_learn_more' => 'আরো জানুন',
+
     // Footer
     'footer_brand' => 'ওয়াটারফল — পরিষ্কার পানীয় পানি ডেলিভারি সিস্টেম',
     'footer_copyright' => '© :year ওয়াটারফল। সর্বস্বত্ব সংরক্ষিত।',

@@ -455,6 +455,63 @@
             text-align: center;
         }
 
+        /* ================================
+           Promotion Banner
+        ================================ */
+
+        .promo-section {
+            padding: 70px 0;
+            background: linear-gradient(135deg, #eff7ff, #ffffff);
+        }
+
+        .promo-card {
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 26px 60px rgba(13, 110, 253, 0.12);
+            padding: 42px;
+        }
+
+        .promo-title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.05;
+            margin-bottom: 18px;
+            color: #0d3c75;
+        }
+
+        .promo-subtitle {
+            font-size: 18px;
+            line-height: 1.75;
+            color: #475569;
+            max-width: 630px;
+            margin-bottom: 30px;
+        }
+
+        .promo-image {
+            width: 100%;
+            max-width: 520px;
+            border-radius: 26px;
+            box-shadow: 0 22px 45px rgba(13, 110, 253, 0.18);
+        }
+
+        .promo-actions .btn {
+            min-width: 170px;
+        }
+
+        @media (max-width: 991px) {
+            .promo-card {
+                padding: 30px;
+            }
+
+            .promo-title {
+                font-size: 32px;
+            }
+
+            .promo-image {
+                margin-top: 28px;
+            }
+        }
+
         .cta-box h2 {
             font-size: 34px;
             font-weight: 800;
@@ -918,6 +975,30 @@
                    class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
                     <i class="bi bi-box-arrow-in-right me-2"></i>{{ __('landing.login') }}
                 </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="promo-section">
+    <div class="container">
+        <div class="promo-card">
+            <div class="row align-items-center gy-4">
+                <div class="col-lg-6">
+                    <h2 class="promo-title">{{ __('landing.footer_promo_title') }}</h2>
+                    <p class="promo-subtitle">{{ __('landing.footer_promo_subtitle') }}</p>
+                    <div class="d-flex flex-wrap gap-3 promo-actions">
+                        <a href="{{ url('customer/register') }}" class="btn btn-primary btn-lg rounded-pill">
+                            {{ __('landing.footer_promo_order_now') }}
+                        </a>
+                        <a href="#features" class="btn btn-outline-primary btn-lg rounded-pill">
+                            {{ __('landing.footer_promo_learn_more') }}
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="{{ asset('images/jar.png') }}" alt="Water Delivery" class="promo-image img-fluid">
+                </div>
             </div>
         </div>
     </div>

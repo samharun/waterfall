@@ -69,6 +69,11 @@ return [
     'register_now' => 'Register Now',
     'login' => 'Login',
 
+    'footer_promo_title' => 'Pure, Fresh & Fast Water Delivery',
+    'footer_promo_subtitle' => 'Get clean and refreshing water delivered to your door, anytime you need it.',
+    'footer_promo_order_now' => 'Order Now',
+    'footer_promo_learn_more' => 'Learn More',
+
     // Footer
     'footer_brand' => 'Waterfall — Pure Drinking Water Delivery System',
     'footer_copyright' => '© :year Waterfall. All rights reserved.',
