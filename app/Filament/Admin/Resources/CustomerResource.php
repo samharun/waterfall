@@ -1,0 +1,370 @@
+<?php
+
+namespace App\Filament\Admin\Resources;
+
+use App\Filament\Admin\Resources\CustomerResource\Pages;
+use App\Models\Customer;
+use App\Models\User;
+use App\Models\Zone;
+use App\Notifications\CustomerApprovedNotification;
+use BackedEnum;
+use Filament\Actions;
+use Filament\Forms;
+use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+
+class CustomerResource extends Resource
+{
+    use \App\Filament\Traits\HasRolePermissions;
+
+    protected static string $viewPermission   = 'customers.view';
+    protected static string $createPermission = 'customers.create';
+    protected static string $editPermission   = 'customers.update';
+    protected static string $deletePermission = 'customers.delete';
+
+    protected static ?string $model = Customer::class;
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Customer Management';
+
+    protected static ?string $navigationLabel = 'Customers';
+
+    protected static ?int $navigationSort = 2;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = \App\Models\Customer::where('approval_status', 'pending')->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+
+            Section::make('Customer Basic Information')
+                ->icon('heroicon-o-identification')
+                ->schema([
+                    Grid::make(2)->schema([
+                        Forms\Components\TextInput::make('customer_id')
+                            ->label('Customer ID')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->placeholder('Auto-generated (WF-CUS-XXXXXX)')
+                            ->visibleOn('edit'),
+
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+
+                        Forms\Components\TextInput::make('name_bn')
+                            ->label('Name (Bangla)')
+                            ->maxLength(255)
+                            ->nullable()
+                            ->placeholder('বাংলায় নাম'),
+
+                        Forms\Components\TextInput::make('mobile')
+                            ->required()
+                            ->maxLength(11)
+                            ->tel()
+                            ->regex('/^01[3-9][0-9]{8}$/')
+                            ->helperText('Bangladesh mobile: 01XXXXXXXXX (11 digits)')
+                            ->unique(Customer::class, 'mobile', ignoreRecord: true),
+
+                        Forms\Components\TextInput::make('email')
+                            ->email()
+                            ->maxLength(255)
+                            ->nullable()
+                            ->unique(Customer::class, 'email', ignoreRecord: true),
+
+                        Forms\Components\Select::make('customer_type')
+                            ->options(Customer::typeLabels())
+                            ->default('residential')
+                            ->required(),
+
+                        Forms\Components\Select::make('zone_id')
+                            ->label('Zone / Line')
+                            ->options(fn () => Zone::active()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                    ]),
+
+                    Forms\Components\Textarea::make('address')
+                        ->required()
+                        ->rows(3)
+                        ->maxLength(500)
+                        ->columnSpanFull(),
+
+                    Forms\Components\Textarea::make('address_bn')
+                        ->label('Address (Bangla)')
+                        ->rows(3)
+                        ->maxLength(500)
+                        ->nullable()
+                        ->placeholder('বাংলায় ঠিকানা')
+                        ->columnSpanFull(),
+                ]),
+
+            Section::make('Account & Approval')
+                ->icon('heroicon-o-shield-check')
+                ->schema([
+                    Grid::make(2)->schema([
+                        Forms\Components\Select::make('approval_status')
+                            ->options(Customer::approvalStatusLabels())
+                            ->default('pending')
+                            ->required(),
+
+                        Forms\Components\Select::make('default_delivery_slot')
+                            ->options(Customer::deliverySlotLabels())
+                            ->nullable()
+                            ->placeholder('— None —'),
+
+                        Forms\Components\TextInput::make('opening_balance')
+                            ->numeric()
+                            ->prefix('৳')
+                            ->default(0)
+                            ->minValue(0),
+
+                        Forms\Components\TextInput::make('current_due')
+                            ->numeric()
+                            ->prefix('৳')
+                            ->default(0),
+
+                        Forms\Components\TextInput::make('jar_deposit_qty')
+                            ->label('Jar Deposit Qty')
+                            ->numeric()
+                            ->integer()
+                            ->default(0)
+                            ->minValue(0),
+
+                        Forms\Components\Select::make('approved_by')
+                            ->label('Approved By')
+                            ->options(fn () => User::orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->nullable()
+                            ->placeholder('— None —'),
+
+                        Forms\Components\DateTimePicker::make('approved_at')
+                            ->label('Approved At')
+                            ->nullable(),
+                    ]),
+                ]),
+
+            Section::make('System Information')
+                ->icon('heroicon-o-cog-6-tooth')
+                ->collapsed()
+                ->schema([
+                    Grid::make(2)->schema([
+                        Forms\Components\Select::make('user_id')
+                            ->label('Linked User Account')
+                            ->options(fn () => User::orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->nullable()
+                            ->placeholder('— None —'),
+
+                        Forms\Components\TextInput::make('qr_code')
+                            ->label('QR Code')
+                            ->maxLength(255)
+                            ->nullable(),
+                    ]),
+                ]),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('customer_id')
+                    ->label('Customer ID')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->fontFamily('mono'),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable()
+                    ->description(fn ($record) => $record->name_bn),
+
+                Tables\Columns\TextColumn::make('mobile')
+                    ->searchable()
+                    ->copyable(),
+
+                Tables\Columns\TextColumn::make('zone.name')
+                    ->label('Zone')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('info'),
+
+                Tables\Columns\TextColumn::make('customer_type')
+                    ->label('Type')
+                    ->badge()
+                    ->colors([
+                        'info'    => 'residential',
+                        'warning' => 'corporate',
+                    ]),
+
+                Tables\Columns\TextColumn::make('approval_status')
+                    ->label('Status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'approved',
+                        'danger'  => 'rejected',
+                        'gray'    => 'inactive',
+                    ]),
+
+                Tables\Columns\TextColumn::make('current_due')
+                    ->label('Due (৳)')
+                    ->numeric(2)
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('jar_deposit_qty')
+                    ->label('Jar Dep.')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('zone_id')
+                    ->label('Zone')
+                    ->options(fn () => Zone::orderBy('name')->pluck('name', 'id'))
+                    ->searchable(),
+
+                Tables\Filters\SelectFilter::make('customer_type')
+                    ->options(Customer::typeLabels()),
+
+                Tables\Filters\SelectFilter::make('approval_status')
+                    ->label('Approval Status')
+                    ->options(Customer::approvalStatusLabels()),
+
+                Tables\Filters\TrashedFilter::make(),
+            ])
+            ->actions([
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+
+                Actions\Action::make('approve')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (Customer $record) => $record->approval_status !== 'approved' && auth()->user()?->can('customers.approve'))
+                    ->requiresConfirmation()
+                    ->action(function (Customer $record) {
+                        $record->update([
+                            'approval_status' => 'approved',
+                            'approved_by'     => Auth::id(),
+                            'approved_at'     => now(),
+                        ]);
+                        // Send approval email if customer has email
+                        if ($record->email && $record->user) {
+                            $record->user->notify(new CustomerApprovedNotification($record));
+                        }
+                        Notification::make()
+                            ->title('Customer approved')
+                            ->success()
+                            ->send();
+                    }),
+
+                Actions\Action::make('reject')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn (Customer $record) => $record->approval_status === 'pending' && auth()->user()?->can('customers.reject'))
+                    ->requiresConfirmation()
+                    ->action(function (Customer $record) {
+                        $record->update(['approval_status' => 'rejected']);
+                        Notification::make()
+                            ->title('Customer rejected')
+                            ->warning()
+                            ->send();
+                    }),
+
+                Actions\Action::make('mark_inactive')
+                    ->label('Deactivate')
+                    ->icon('heroicon-o-pause-circle')
+                    ->color('gray')
+                    ->visible(fn (Customer $record) => $record->approval_status === 'approved')
+                    ->requiresConfirmation()
+                    ->action(function (Customer $record) {
+                        $record->update(['approval_status' => 'inactive']);
+                        Notification::make()
+                            ->title('Customer marked inactive')
+                            ->send();
+                    }),
+
+                Actions\DeleteAction::make(),
+                Actions\RestoreAction::make(),
+            ])
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('bulk_approve')
+                        ->label('Approve Selected')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(fn (Customer $r) => $r->update([
+                                'approval_status' => 'approved',
+                                'approved_by'     => Auth::id(),
+                                'approved_at'     => now(),
+                            ]));
+                            Notification::make()->title('Selected customers approved')->success()->send();
+                        }),
+
+                    Actions\BulkAction::make('bulk_inactive')
+                        ->label('Mark Inactive')
+                        ->icon('heroicon-o-pause-circle')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(fn (Customer $r) => $r->update(['approval_status' => 'inactive']));
+                            Notification::make()->title('Selected customers marked inactive')->send();
+                        }),
+
+                    Actions\DeleteBulkAction::make(),
+                    Actions\RestoreBulkAction::make(),
+                    Actions\ForceDeleteBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index'  => Pages\ListCustomers::route('/'),
+            'create' => Pages\CreateCustomer::route('/create'),
+            'edit'   => Pages\EditCustomer::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()->withoutGlobalScopes([
+            SoftDeletingScope::class,
+        ]);
+    }
+}
