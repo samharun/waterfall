@@ -641,24 +641,31 @@
         <div id="mainNavbar" class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto align-items-lg-center">
                 <li class="nav-item">
-                    <a class="nav-link" href="#home">Home</a>
+                    <a class="nav-link" href="#home">{{ __('landing.nav_home') }}</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#features">Features</a>
+                    <a class="nav-link" href="#features">{{ __('landing.nav_features') }}</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#how-it-works">How It Works</a>
+                    <a class="nav-link" href="#how-it-works">{{ __('landing.nav_how_it_works') }}</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#download">Download</a>
+                    <a class="nav-link" href="#download">{{ __('landing.nav_download') }}</a>
+                </li>
+
+                <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('locale.switch', 'en') }}" class="btn btn-sm btn-outline-light {{ app()->getLocale() === 'en' ? 'active' : '' }}">EN</a>
+                        <a href="{{ route('locale.switch', 'bn') }}" class="btn btn-sm btn-outline-light {{ app()->getLocale() === 'bn' ? 'active' : '' }}">বাং</a>
+                    </div>
                 </li>
 
                 <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
                     <a href="{{ url('customer/login') }}" class="btn btn-outline-primary nav-login-btn">
-                        Login
+                        {{ __('landing.login') }}
                     </a>
                 </li>
             </ul>
@@ -673,28 +680,26 @@
             <div class="col-lg-7">
                 <div class="hero-badge">
                     <i class="bi bi-shield-check"></i>
-                    Pure water delivery made simple
+                    {{ __('landing.hero_badge') }}
                 </div>
 
                 <h1 class="hero-title">
-                    Pure Drinking Water Delivered to Your Door
+                    {{ __('landing.hero_title') }}
                 </h1>
 
                 <p class="hero-subtitle">
-                    Waterfall makes jar ordering, delivery management, monthly billing,
-                    customer dues, and zone-wise delivery operation simple for homes,
-                    offices, dealers, and distributors.
+                    {{ __('landing.hero_subtitle') }}
                 </p>
 
                 <div class="hero-actions d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
                     <a href="{{ url('customer/register') }}"
                        class="btn btn-light btn-lg rounded-pill px-4 fw-bold">
-                        <i class="bi bi-person-plus me-2"></i>Register Customer
+                        <i class="bi bi-person-plus me-2"></i>{{ __('landing.register_customer') }}
                     </a>
 
                     <a href="#download"
                        class="btn btn-primary btn-lg rounded-pill px-4 fw-bold border border-light">
-                        <i class="bi bi-download me-2"></i>Download App
+                        <i class="bi bi-download me-2"></i>{{ __('landing.download_app') }}
                     </a>
                 </div>
             </div>
@@ -704,13 +709,13 @@
                     <div class="phone-screen">
                         <div class="phone-top-bar"></div>
 
-                        <h5 class="phone-title">My Water Order</h5>
-                        <p class="phone-subtitle">Customer ID: WF-CUS-000124</p>
+                        <h5 class="phone-title">{{ __('landing.my_water_order') }}</h5>
+                        <p class="phone-subtitle">{{ __('landing.customer_id') }}: WF-CUS-000124</p>
 
                         <div class="order-circle">
                             <div>
                                 <h1 class="fw-bold mb-0">2</h1>
-                                <small>Jars Ordered</small>
+                                <small>{{ __('landing.jars_ordered') }}</small>
                             </div>
                         </div>
 
@@ -719,9 +724,9 @@
                                 <span class="phone-info-icon">
                                     <i class="bi bi-truck"></i>
                                 </span>
-                                <span>Order Status</span>
+                                <span>{{ __('landing.order_status') }}</span>
                             </div>
-                            <strong>On the Way</strong>
+                            <strong>{{ __('landing.on_the_way') }}</strong>
                         </div>
 
                         <div class="phone-info-row d-flex justify-content-between align-items-center">
@@ -729,9 +734,9 @@
                                 <span class="phone-info-icon">
                                     <i class="bi bi-clock-history"></i>
                                 </span>
-                                <span>Delivery Slot</span>
+                                <span>{{ __('landing.delivery_slot') }}</span>
                             </div>
-                            <strong>Morning</strong>
+                            <strong>{{ __('landing.morning') }}</strong>
                         </div>
 
                         <div class="phone-info-row d-flex justify-content-between align-items-center">
@@ -739,9 +744,9 @@
                                 <span class="phone-info-icon">
                                     <i class="bi bi-droplet"></i>
                                 </span>
-                                <span>Jar Balance</span>
+                                <span>{{ __('landing.jar_balance') }}</span>
                             </div>
-                            <strong>03 Jars</strong>
+                            <strong>{{ __('landing.jars_count') }}</strong>
                         </div>
 
                         <div class="phone-info-row d-flex justify-content-between align-items-center">
@@ -749,13 +754,13 @@
                                 <span class="phone-info-icon">
                                     <i class="bi bi-wallet2"></i>
                                 </span>
-                                <span>Current Due</span>
+                                <span>{{ __('landing.current_due') }}</span>
                             </div>
-                            <strong>৳ 320</strong>
+                            <strong>{{ __('landing.amount') }}</strong>
                         </div>
 
                         <button type="button" class="btn btn-primary w-100 phone-route-btn mt-3">
-                            <i class="bi bi-plus-circle me-2"></i>Order Water Jar
+                            <i class="bi bi-plus-circle me-2"></i>{{ __('landing.order_water_jar') }}
                         </button>
                     </div>
                 </div>
@@ -768,10 +773,9 @@
 <section id="features" class="section-padding">
     <div class="container">
         <div class="text-center">
-            <h2 class="section-title">Everything Needed for Water Jar Delivery</h2>
+            <h2 class="section-title">{{ __('landing.features_title') }}</h2>
             <p class="section-subtitle">
-                A practical platform for customer orders, delivery status, billing, deposits,
-                zone-wise route planning, and dealer operations.
+                {{ __('landing.features_subtitle') }}
             </p>
         </div>
 
@@ -781,9 +785,9 @@
                     <div class="feature-icon">
                         <i class="bi bi-cart-check"></i>
                     </div>
-                    <h5>Customer Order</h5>
+                    <h5>{{ __('landing.feature_customer_order_title') }}</h5>
                     <p>
-                        Customers can order water jars when needed and select preferred delivery slots.
+                        {{ __('landing.feature_customer_order_desc') }}
                     </p>
                 </div>
             </div>
@@ -793,9 +797,9 @@
                     <div class="feature-icon">
                         <i class="bi bi-truck"></i>
                     </div>
-                    <h5>Delivery Status</h5>
+                    <h5>{{ __('landing.feature_delivery_status_title') }}</h5>
                     <p>
-                        Track pending, confirmed, on-the-way, and delivered orders from one place.
+                        {{ __('landing.feature_delivery_status_desc') }}
                     </p>
                 </div>
             </div>
@@ -805,9 +809,9 @@
                     <div class="feature-icon">
                         <i class="bi bi-cash-coin"></i>
                     </div>
-                    <h5>Monthly Billing</h5>
+                    <h5>{{ __('landing.feature_monthly_billing_title') }}</h5>
                     <p>
-                        Manage customer dues, monthly bills, jar prices, and payment records.
+                        {{ __('landing.feature_monthly_billing_desc') }}
                     </p>
                 </div>
             </div>
@@ -817,9 +821,9 @@
                     <div class="feature-icon">
                         <i class="bi bi-droplet-half"></i>
                     </div>
-                    <h5>Jar Deposit Tracking</h5>
+                    <h5>{{ __('landing.feature_jar_deposit_title') }}</h5>
                     <p>
-                        Track jar deposits, returned jars, customer jar balance, and outstanding jars.
+                        {{ __('landing.feature_jar_deposit_desc') }}
                     </p>
                 </div>
             </div>
@@ -829,9 +833,9 @@
                     <div class="feature-icon">
                         <i class="bi bi-geo-alt"></i>
                     </div>
-                    <h5>Zone-wise Delivery</h5>
+                    <h5>{{ __('landing.feature_zone_delivery_title') }}</h5>
                     <p>
-                        Organize customers by zone, line, route, delivery manager, and delivery staff.
+                        {{ __('landing.feature_zone_delivery_desc') }}
                     </p>
                 </div>
             </div>
@@ -841,9 +845,9 @@
                     <div class="feature-icon">
                         <i class="bi bi-building"></i>
                     </div>
-                    <h5>Office and Dealer Mode</h5>
+                    <h5>{{ __('landing.feature_office_dealer_title') }}</h5>
                     <p>
-                        Support corporate customers, office accounts, dealers, distributors, and custom pricing.
+                        {{ __('landing.feature_office_dealer_desc') }}
                     </p>
                 </div>
             </div>
@@ -855,9 +859,9 @@
 <section id="how-it-works" class="section-padding light-section">
     <div class="container">
         <div class="text-center">
-            <h2 class="section-title">How Waterfall Works</h2>
+            <h2 class="section-title">{{ __('landing.how_it_works_title') }}</h2>
             <p class="section-subtitle">
-                Simple ordering for customers and structured delivery control for the business.
+                {{ __('landing.how_it_works_subtitle') }}
             </p>
         </div>
 
@@ -865,9 +869,9 @@
             <div class="col-md-4">
                 <div class="step-card">
                     <div class="step-number">1</div>
-                    <h5>Customer Registers</h5>
+                    <h5>{{ __('landing.step_register_title') }}</h5>
                     <p>
-                        Customer registers with Bangladesh mobile number and receives a unique Customer ID.
+                        {{ __('landing.step_register_desc') }}
                     </p>
                 </div>
             </div>
@@ -875,9 +879,9 @@
             <div class="col-md-4">
                 <div class="step-card">
                     <div class="step-number">2</div>
-                    <h5>Order Water Jar</h5>
+                    <h5>{{ __('landing.step_order_title') }}</h5>
                     <p>
-                        Customer selects jar quantity and preferred slot such as now, morning, or evening.
+                        {{ __('landing.step_order_desc') }}
                     </p>
                 </div>
             </div>
@@ -885,9 +889,9 @@
             <div class="col-md-4">
                 <div class="step-card">
                     <div class="step-number">3</div>
-                    <h5>Delivery Completed</h5>
+                    <h5>{{ __('landing.step_delivery_title') }}</h5>
                     <p>
-                        Delivery staff marks orders as delivered and the system updates billing and jar records.
+                        {{ __('landing.step_delivery_desc') }}
                     </p>
                 </div>
             </div>
@@ -899,21 +903,20 @@
 <section id="download" class="cta-section">
     <div class="container">
         <div class="cta-box">
-            <h2>Start Managing Water Delivery Smarter</h2>
+            <h2>{{ __('landing.cta_title') }}</h2>
             <p>
-                Use Waterfall to manage customer orders, deliveries, dues, jar deposits,
-                monthly billing, and dealer/distributor operations from a single platform.
+                {{ __('landing.cta_subtitle') }}
             </p>
 
             <div class="d-flex flex-wrap gap-3 justify-content-center">
                 <a href="{{ url('customer/register') }}"
                    class="btn btn-light btn-lg rounded-pill px-4 fw-bold">
-                    <i class="bi bi-person-plus me-2"></i>Register Now
+                    <i class="bi bi-person-plus me-2"></i>{{ __('landing.register_now') }}
                 </a>
 
                 <a href="{{ url('customer/login') }}"
                    class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    <i class="bi bi-box-arrow-in-right me-2"></i>{{ __('landing.login') }}
                 </a>
             </div>
         </div>
@@ -925,11 +928,11 @@
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
             <div>
-                <strong>Waterfall</strong> — Pure Drinking Water Delivery System
+                <strong>{{ __('landing.footer_brand') }}</strong>
             </div>
 
             <div>
-                © {{ date('Y') }} Waterfall. All rights reserved.
+                {{ __('landing.footer_copyright', ['year' => date('Y')]) }}
             </div>
         </div>
     </div>
