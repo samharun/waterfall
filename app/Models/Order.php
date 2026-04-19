@@ -50,6 +50,25 @@ class Order extends Model
                 $order->order_no = self::generateOrderNo();
             }
         });
+
+        // Prevent manually setting delivery-driven statuses without a delivery record.
+        static::updating(function (Order $order) {
+            if (! $order->isDirty('order_status')) {
+                return;
+            }
+
+            $newStatus = $order->order_status;
+
+            if (in_array($newStatus, ['assigned', 'delivered'])) {
+                $hasDelivery = $order->deliveries()->whereNotIn('delivery_status', ['cancelled'])->exists();
+
+                if (! $hasDelivery) {
+                    throw new \RuntimeException(
+                        "Order status cannot be set to \"{$newStatus}\" without an active delivery assignment."
+                    );
+                }
+            }
+        });
     }
 
     public static function generateOrderNo(): string

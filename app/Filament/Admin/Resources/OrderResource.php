@@ -139,9 +139,10 @@ class OrderResource extends Resource
 
                         Forms\Components\Select::make('order_status')
                             ->label('Order Status')
-                            ->options(Order::orderStatusLabels())
+                            ->options(fn (?Order $record) => self::manualOrderStatusOptions($record))
                             ->default('pending')
-                            ->required(),
+                            ->required()
+                            ->helperText(fn (?Order $record) => self::orderStatusHelperText($record)),
 
                         Forms\Components\Select::make('payment_status')
                             ->label('Payment Status')
@@ -266,6 +267,35 @@ class OrderResource extends Resource
                         ->columnSpanFull(),
                 ]),
         ]);
+    }
+
+    /**
+     * Returns the order status options that are safe to set manually.
+     * "assigned" and "delivered" are driven by delivery assignments only.
+     */
+    protected static function manualOrderStatusOptions(?Order $record): array
+    {
+        $all = Order::orderStatusLabels();
+
+        // If the order already has an active delivery, allow all statuses (read-only context).
+        // Otherwise, strip delivery-driven statuses so they can't be set by hand.
+        if ($record && $record->deliveries()->whereNotIn('delivery_status', ['cancelled'])->exists()) {
+            return $all;
+        }
+
+        return array_diff_key($all, array_flip(['assigned', 'delivered']));
+    }
+
+    /**
+     * Helper text shown under the order_status field.
+     */
+    protected static function orderStatusHelperText(?Order $record): ?string
+    {
+        if ($record && $record->deliveries()->whereNotIn('delivery_status', ['cancelled'])->exists()) {
+            return null;
+        }
+
+        return '"Assigned" and "Delivered" are set automatically via Delivery Assignments.';
     }
 
     /**

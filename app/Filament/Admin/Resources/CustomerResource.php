@@ -42,7 +42,8 @@ class CustomerResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = \App\Models\Customer::where('approval_status', 'pending')->count();
+        $count = Customer::where('approval_status', 'pending')->count();
+
         return $count > 0 ? (string) $count : null;
     }
 
@@ -54,7 +55,6 @@ class CustomerResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-
             Section::make('Customer Basic Information')
                 ->icon('heroicon-o-identification')
                 ->schema([
@@ -73,8 +73,7 @@ class CustomerResource extends Resource
                         Forms\Components\TextInput::make('name_bn')
                             ->label('Name (Bangla)')
                             ->maxLength(255)
-                            ->nullable()
-                            ->placeholder('বাংলায় নাম'),
+                            ->nullable(),
 
                         Forms\Components\TextInput::make('mobile')
                             ->required()
@@ -99,11 +98,10 @@ class CustomerResource extends Resource
                             ->label('Zone / Line')
                             ->options(fn () => Zone::active()->orderBy('name')->pluck('name', 'id'))
                             ->searchable()
-                            ->required(),
+                            ->helperText('Assign a zone before approving the customer.'),
                     ]),
 
                     Forms\Components\Textarea::make('address')
-                        ->required()
                         ->rows(3)
                         ->maxLength(500)
                         ->columnSpanFull(),
@@ -113,7 +111,6 @@ class CustomerResource extends Resource
                         ->rows(3)
                         ->maxLength(500)
                         ->nullable()
-                        ->placeholder('বাংলায় ঠিকানা')
                         ->columnSpanFull(),
                 ]),
 
@@ -129,17 +126,17 @@ class CustomerResource extends Resource
                         Forms\Components\Select::make('default_delivery_slot')
                             ->options(Customer::deliverySlotLabels())
                             ->nullable()
-                            ->placeholder('— None —'),
+                            ->placeholder('None'),
 
                         Forms\Components\TextInput::make('opening_balance')
                             ->numeric()
-                            ->prefix('৳')
+                            ->prefix('BDT')
                             ->default(0)
                             ->minValue(0),
 
                         Forms\Components\TextInput::make('current_due')
                             ->numeric()
-                            ->prefix('৳')
+                            ->prefix('BDT')
                             ->default(0),
 
                         Forms\Components\TextInput::make('jar_deposit_qty')
@@ -154,7 +151,7 @@ class CustomerResource extends Resource
                             ->options(fn () => User::orderBy('name')->pluck('name', 'id'))
                             ->searchable()
                             ->nullable()
-                            ->placeholder('— None —'),
+                            ->placeholder('None'),
 
                         Forms\Components\DateTimePicker::make('approved_at')
                             ->label('Approved At')
@@ -172,7 +169,7 @@ class CustomerResource extends Resource
                             ->options(fn () => User::orderBy('name')->pluck('name', 'id'))
                             ->searchable()
                             ->nullable()
-                            ->placeholder('— None —'),
+                            ->placeholder('None'),
 
                         Forms\Components\TextInput::make('qr_code')
                             ->label('QR Code')
@@ -214,7 +211,7 @@ class CustomerResource extends Resource
                     ->label('Type')
                     ->badge()
                     ->colors([
-                        'info'    => 'residential',
+                        'info' => 'residential',
                         'warning' => 'corporate',
                     ]),
 
@@ -224,12 +221,12 @@ class CustomerResource extends Resource
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'approved',
-                        'danger'  => 'rejected',
-                        'gray'    => 'inactive',
+                        'danger' => 'rejected',
+                        'gray' => 'inactive',
                     ]),
 
                 Tables\Columns\TextColumn::make('current_due')
-                    ->label('Due (৳)')
+                    ->label('Due (BDT)')
                     ->numeric(2)
                     ->sortable(),
 
@@ -268,15 +265,26 @@ class CustomerResource extends Resource
                     ->visible(fn (Customer $record) => $record->approval_status !== 'approved' && auth()->user()?->can('customers.approve'))
                     ->requiresConfirmation()
                     ->action(function (Customer $record) {
+                        if (! $record->zone_id) {
+                            Notification::make()
+                                ->title('Assign a zone before approval')
+                                ->body('Set the customer zone from the edit form, then approve the account.')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
                         $record->update([
                             'approval_status' => 'approved',
-                            'approved_by'     => Auth::id(),
-                            'approved_at'     => now(),
+                            'approved_by' => Auth::id(),
+                            'approved_at' => now(),
                         ]);
-                        // Send approval email if customer has email
+
                         if ($record->email && $record->user) {
                             $record->user->notify(new CustomerApprovedNotification($record));
                         }
+
                         Notification::make()
                             ->title('Customer approved')
                             ->success()
@@ -321,12 +329,37 @@ class CustomerResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function ($records) {
-                            $records->each(fn (Customer $r) => $r->update([
-                                'approval_status' => 'approved',
-                                'approved_by'     => Auth::id(),
-                                'approved_at'     => now(),
-                            ]));
-                            Notification::make()->title('Selected customers approved')->success()->send();
+                            $approvedCount = 0;
+                            $skippedCount = 0;
+
+                            $records->each(function (Customer $record) use (&$approvedCount, &$skippedCount) {
+                                if (! $record->zone_id) {
+                                    $skippedCount++;
+                                    return;
+                                }
+
+                                $record->update([
+                                    'approval_status' => 'approved',
+                                    'approved_by' => Auth::id(),
+                                    'approved_at' => now(),
+                                ]);
+                                $approvedCount++;
+                            });
+
+                            if ($approvedCount > 0) {
+                                Notification::make()
+                                    ->title("{$approvedCount} customer(s) approved")
+                                    ->success()
+                                    ->send();
+                            }
+
+                            if ($skippedCount > 0) {
+                                Notification::make()
+                                    ->title("{$skippedCount} customer(s) skipped")
+                                    ->body('Assign zones before approving pending registrations.')
+                                    ->warning()
+                                    ->send();
+                            }
                         }),
 
                     Actions\BulkAction::make('bulk_inactive')
@@ -335,7 +368,7 @@ class CustomerResource extends Resource
                         ->color('gray')
                         ->requiresConfirmation()
                         ->action(function ($records) {
-                            $records->each(fn (Customer $r) => $r->update(['approval_status' => 'inactive']));
+                            $records->each(fn (Customer $record) => $record->update(['approval_status' => 'inactive']));
                             Notification::make()->title('Selected customers marked inactive')->send();
                         }),
 
@@ -355,9 +388,9 @@ class CustomerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCustomers::route('/'),
+            'index' => Pages\ListCustomers::route('/'),
             'create' => Pages\CreateCustomer::route('/create'),
-            'edit'   => Pages\EditCustomer::route('/{record}/edit'),
+            'edit' => Pages\EditCustomer::route('/{record}/edit'),
         ];
     }
 
