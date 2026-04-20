@@ -16,12 +16,14 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\HtmlString;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -37,6 +39,39 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): HtmlString => new HtmlString(<<<'HTML'
+                <script>
+                    (() => {
+                        const installPersistFallback = () => {
+                            if (! window.Alpine || typeof window.Alpine.$persist === 'function') {
+                                return;
+                            }
+
+                            const persist = (value) => ({
+                                as() {
+                                    return value;
+                                },
+                            });
+
+                            window.Alpine.$persist = persist;
+
+                            if (typeof window.Alpine.magic === 'function') {
+                                window.Alpine.magic('persist', () => persist);
+                            }
+
+                            if (typeof window.Alpine.directive === 'function') {
+                                window.Alpine.directive('persist', () => {});
+                            }
+                        };
+
+                        if (window.Alpine) {
+                            installPersistFallback();
+                        }
+
+                        document.addEventListener('alpine:init', installPersistFallback, { once: true });
+                    })();
+                </script>
+            HTML))
             ->databaseNotifications(fn (): bool => Schema::hasTable('notifications'))
             ->databaseNotificationsPolling('5s')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
