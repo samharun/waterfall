@@ -533,10 +533,14 @@ class OrderResource extends Resource
                     }),
 
                 Actions\Action::make('assign_delivery')
-                    ->label('Assign Delivery')
+                    ->label('Assign Staff')
                     ->icon('heroicon-o-truck')
                     ->color('info')
-                    ->visible(fn (Order $record) => $record->canCreateDelivery())
+                    ->visible(fn (Order $record) => $record->deliveries()
+                        ->where('delivery_status', 'pending')
+                        ->exists()
+                        && auth()->user()?->can('deliveries.assign')
+                    )
                     ->form([
                         Forms\Components\Select::make('delivery_staff_id')
                             ->label('Delivery Staff')
@@ -553,20 +557,22 @@ class OrderResource extends Resource
                             ->nullable(),
                     ])
                     ->action(function (Order $record, array $data) {
-                        Delivery::create([
-                            'delivery_no'       => Delivery::generateDeliveryNo(),
-                            'order_id'          => $record->id,
-                            'zone_id'           => $record->zone_id,
-                            'delivery_staff_id' => $data['delivery_staff_id'],
-                            'assigned_by'       => Auth::id(),
-                            'assigned_at'       => now(),
-                            'delivery_status'   => 'assigned',
-                            'delivery_note'     => $data['delivery_note'] ?? null,
-                        ]);
+                        // Assign staff to the existing pending delivery
+                        $delivery = $record->deliveries()
+                            ->where('delivery_status', 'pending')
+                            ->first();
 
-                        $record->update(['order_status' => 'assigned']);
+                        if ($delivery) {
+                            $delivery->update([
+                                'delivery_staff_id' => $data['delivery_staff_id'],
+                                'assigned_by'       => Auth::id(),
+                                'assigned_at'       => now(),
+                                'delivery_status'   => 'assigned',
+                                'delivery_note'     => $data['delivery_note'] ?? $delivery->delivery_note,
+                            ]);
+                        }
 
-                        Notification::make()->title('Delivery assigned successfully')->success()->send();
+                        Notification::make()->title('Delivery staff assigned successfully')->success()->send();
                     }),
 
                 Actions\DeleteAction::make(),

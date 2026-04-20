@@ -34,22 +34,7 @@ class CreateDelivery extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Sync order status based on delivery status
-        $this->record->load('order');
-        $this->syncOrderStatus($this->record);
-    }
-
-    private function syncOrderStatus(Delivery $delivery): void
-    {
-        $order = $delivery->order;
-        if (! $order) {
-            return;
-        }
-
-        match ($delivery->delivery_status) {
-            'assigned', 'in_progress' => $order->update(['order_status' => 'assigned']),
-            'delivered'               => $order->update(['order_status' => 'delivered']),
-            default                   => null,
-        };
+        // Order status sync and due recalculation handled centrally
+        // by Delivery::booted() created hook.
     }
 }

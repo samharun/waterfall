@@ -263,22 +263,32 @@ class CustomerResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn (Customer $record) => $record->approval_status !== 'approved' && auth()->user()?->can('customers.approve'))
-                    ->requiresConfirmation()
-                    ->action(function (Customer $record) {
-                        if (! $record->zone_id) {
-                            Notification::make()
-                                ->title('Assign a zone before approval')
-                                ->body('Set the customer zone from the edit form, then approve the account.')
-                                ->danger()
-                                ->send();
+                    ->fillForm(fn (Customer $record) => [
+                        'zone_id' => $record->zone_id,
+                        'address' => $record->address,
+                    ])
+                    ->form([
+                        Forms\Components\Select::make('zone_id')
+                            ->label('Zone / Line')
+                            ->options(fn () => Zone::active()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->required()
+                            ->helperText('Required before approval.'),
 
-                            return;
-                        }
-
+                        Forms\Components\Textarea::make('address')
+                            ->label('Address')
+                            ->rows(3)
+                            ->maxLength(500)
+                            ->required()
+                            ->helperText('Customer must have a delivery address before approval.'),
+                    ])
+                    ->action(function (Customer $record, array $data) {
                         $record->update([
+                            'zone_id'         => $data['zone_id'],
+                            'address'         => $data['address'],
                             'approval_status' => 'approved',
-                            'approved_by' => Auth::id(),
-                            'approved_at' => now(),
+                            'approved_by'     => Auth::id(),
+                            'approved_at'     => now(),
                         ]);
 
                         if ($record->email && $record->user) {
@@ -333,7 +343,7 @@ class CustomerResource extends Resource
                             $skippedCount = 0;
 
                             $records->each(function (Customer $record) use (&$approvedCount, &$skippedCount) {
-                                if (! $record->zone_id) {
+                                if (! $record->zone_id || ! $record->address) {
                                     $skippedCount++;
                                     return;
                                 }
@@ -356,7 +366,7 @@ class CustomerResource extends Resource
                             if ($skippedCount > 0) {
                                 Notification::make()
                                     ->title("{$skippedCount} customer(s) skipped")
-                                    ->body('Assign zones before approving pending registrations.')
+                                    ->body('Zone and address are required before approving.')
                                     ->warning()
                                     ->send();
                             }

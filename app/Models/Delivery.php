@@ -38,6 +38,80 @@ class Delivery extends Model
                 $delivery->delivery_no = self::generateDeliveryNo();
             }
         });
+
+        static::created(function (Delivery $delivery) {
+            self::syncOrderAndDue($delivery);
+        });
+
+        static::updated(function (Delivery $delivery) {
+            if (! $delivery->wasChanged('delivery_status')) {
+                return;
+            }
+            self::syncOrderAndDue($delivery);
+        });
+
+        // When a delivery is soft-deleted, revert the order status
+        static::deleted(function (Delivery $delivery) {
+            $order = $delivery->order()->with(['customer', 'dealer'])->first();
+            if (! $order) {
+                return;
+            }
+
+            // Only revert if this was the active delivery driving the order status
+            if (in_array($order->order_status, ['assigned', 'delivered'])) {
+                // Check if any other active delivery still exists
+                $hasOtherActive = $order->deliveries()
+                    ->whereNotIn('delivery_status', ['cancelled'])
+                    ->where('id', '!=', $delivery->id)
+                    ->exists();
+
+                if (! $hasOtherActive) {
+                    $order->updateQuietly(['order_status' => 'confirmed']);
+                }
+            }
+
+            // Recalculate due since a delivered delivery was removed
+            if ($delivery->delivery_status === 'delivered') {
+                if ($order->order_type === 'customer') {
+                    $order->customer?->recalculateCurrentDue();
+                } else {
+                    $order->dealer?->recalculateCurrentDue();
+                }
+            }
+        });
+
+        // When a delivery is restored, re-sync order status
+        static::restored(function (Delivery $delivery) {
+            self::syncOrderAndDue($delivery);
+        });
+    }
+
+    private static function syncOrderAndDue(Delivery $delivery): void
+    {
+        $order = $delivery->order()->with(['customer', 'dealer'])->first();
+        if (! $order) {
+            return;
+        }
+
+        $newOrderStatus = match ($delivery->delivery_status) {
+            'assigned', 'in_progress' => 'assigned',
+            'delivered'               => 'delivered',
+            'cancelled'               => in_array($order->order_status, ['assigned']) ? 'confirmed' : null,
+            default                   => null,
+        };
+
+        if ($newOrderStatus) {
+            $order->updateQuietly(['order_status' => $newOrderStatus]);
+        }
+
+        // Recalculate due whenever delivery reaches a terminal or delivery state
+        if (in_array($delivery->delivery_status, ['delivered', 'cancelled', 'failed'])) {
+            if ($order->order_type === 'customer') {
+                $order->customer?->recalculateCurrentDue();
+            } else {
+                $order->dealer?->recalculateCurrentDue();
+            }
+        }
     }
 
     public static function generateDeliveryNo(): string
@@ -140,14 +214,13 @@ class Delivery extends Model
             'assigned_by'       => $assignedById ?? $this->assigned_by,
             'assigned_at'       => $this->assigned_at ?? now(),
         ]);
-
-        $this->order->update(['order_status' => 'assigned']);
+        // order status handled by booted() updated hook
     }
 
     public function markInProgress(): void
     {
         $this->update(['delivery_status' => 'in_progress']);
-        $this->order->update(['order_status' => 'assigned']);
+        // order status handled by booted() updated hook
     }
 
     public function markDelivered(): void
@@ -156,8 +229,7 @@ class Delivery extends Model
             'delivery_status' => 'delivered',
             'delivered_at'    => now(),
         ]);
-
-        $this->order->update(['order_status' => 'delivered']);
+        // order status + due recalc handled by booted() updated hook
     }
 
     public function markFailed(?string $reason = null): void
@@ -166,20 +238,13 @@ class Delivery extends Model
             'delivery_status' => 'failed',
             'failure_reason'  => $reason ?? $this->failure_reason,
         ]);
-        // Keep order as assigned so it can be re-assigned
-        $this->order->update(['order_status' => 'assigned']);
+        // order status + due recalc handled by booted() updated hook
     }
 
     public function markCancelled(): void
     {
-        $previousOrderStatus = $this->order->order_status;
-
         $this->update(['delivery_status' => 'cancelled']);
-
-        // Revert order to confirmed if it was assigned/in_progress
-        if (in_array($previousOrderStatus, ['assigned'])) {
-            $this->order->update(['order_status' => 'confirmed']);
-        }
+        // order status + due recalc handled by booted() updated hook
     }
 
     // ── Label helpers ──────────────────────────────────────────────

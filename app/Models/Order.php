@@ -69,6 +69,28 @@ class Order extends Model
                 }
             }
         });
+
+        // Auto-create a pending delivery when an order is confirmed.
+        static::updated(function (Order $order) {
+            if (! $order->wasChanged('order_status')) {
+                return;
+            }
+
+            if ($order->order_status !== 'confirmed') {
+                return;
+            }
+
+            // Only create if no active delivery already exists
+            if ($order->deliveries()->whereNotIn('delivery_status', ['cancelled'])->exists()) {
+                return;
+            }
+
+            Delivery::create([
+                'order_id'         => $order->id,
+                'zone_id'          => $order->zone_id,
+                'delivery_status'  => 'pending',
+            ]);
+        });
     }
 
     public static function generateOrderNo(): string
@@ -178,7 +200,6 @@ class Order extends Model
         return in_array($this->order_status, ['confirmed', 'assigned'])
             && ! $this->deliveries()->active()->exists();
     }
-
     // ── Label helpers ──────────────────────────────────────────────
 
     public static function orderTypeLabels(): array

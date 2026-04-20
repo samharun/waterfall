@@ -16,7 +16,7 @@ class DashboardController extends Controller
     public function index(Request $request): JsonResponse
     {
         $locale   = $this->resolveLocale($request);
-        $customer = $request->user()->load('zone');
+        $customer = $request->user()->load('zone')->fresh(); // fresh() ensures current_due is up-to-date
 
         $latestOrder = Order::forCustomer($customer->id)
             ->with(['items.product', 'delivery'])
@@ -28,10 +28,6 @@ class DashboardController extends Controller
             ->count();
 
         $totalOrders = Order::forCustomer($customer->id)->count();
-
-        $totalDue = Invoice::forCustomer($customer->id)
-            ->whereNotIn('invoice_status', ['cancelled', 'draft'])
-            ->sum('due_amount');
 
         $latestInvoice = Invoice::forCustomer($customer->id)
             ->whereNotIn('invoice_status', ['cancelled', 'draft'])
@@ -52,7 +48,7 @@ class DashboardController extends Controller
             'stats' => [
                 'total_orders'  => $totalOrders,
                 'active_orders' => $activeOrders,
-                'current_due'   => (float) $totalDue,
+                'current_due'   => (float) $customer->current_due,
                 'jar_balance'   => $customer->jar_deposit_qty ?? 0,
             ],
             'latest_order' => $latestOrder ? [

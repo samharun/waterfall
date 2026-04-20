@@ -55,28 +55,37 @@ class BillingController extends Controller
     public function dueBalance(Request $request): JsonResponse
     {
         $locale   = $this->resolveLocale($request);
-        $customer = $request->user();
+        $customer = $request->user()->fresh(); // always read latest synced values
 
-        $invoices = Invoice::forCustomer($customer->id)
+        $totalOrdered = (float) $customer->orders()
+            ->where('order_status', 'delivered')
+            ->sum('total_amount');
+
+        $totalPaid = (float) \App\Models\Payment::where('customer_id', $customer->id)
+            ->where('payment_type', 'customer')
+            ->where('collection_status', 'accepted')
+            ->sum('amount');
+
+        // current_due is kept in sync by the model on every delivery/payment event
+        $totalDue = (float) $customer->current_due;
+
+        $overdue = (float) Invoice::forCustomer($customer->id)
             ->whereNotIn('invoice_status', ['cancelled', 'draft'])
-            ->get();
-
-        $totalBill = $invoices->sum('total_amount');
-        $totalPaid = $invoices->sum('paid_amount');
-        $totalDue  = $invoices->sum('due_amount');
-
-        $overdue = $invoices
-            ->filter(fn (Invoice $inv) => $inv->due_date && $inv->due_date->isPast() && $inv->due_amount > 0)
+            ->where('due_date', '<', now()->toDateString())
+            ->where('due_amount', '>', 0)
             ->sum('due_amount');
 
-        $latestInvoice = $invoices->sortByDesc('invoice_date')->first();
+        $latestInvoice = Invoice::forCustomer($customer->id)
+            ->whereNotIn('invoice_status', ['cancelled', 'draft'])
+            ->latest('invoice_date')
+            ->first();
 
         return $this->success('Due balance retrieved.', [
-            'total_bill_amount' => (float) $totalBill,
-            'total_paid_amount' => (float) $totalPaid,
-            'total_due'         => (float) $totalDue,
-            'overdue_amount'    => (float) $overdue,
-            'latest_bill'       => $latestInvoice ? [
+            'total_delivered_amount' => $totalOrdered,
+            'total_paid_amount'      => $totalPaid,
+            'total_due'              => $totalDue,
+            'overdue_amount'         => $overdue,
+            'latest_bill'            => $latestInvoice ? [
                 'invoice_no'    => $latestInvoice->invoice_no,
                 'billing_month' => $latestInvoice->billing_month,
                 'billing_year'  => $latestInvoice->billing_year,

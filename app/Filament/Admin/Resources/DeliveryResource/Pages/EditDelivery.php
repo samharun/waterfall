@@ -30,21 +30,8 @@ class EditDelivery extends EditRecord
 
     protected function afterSave(): void
     {
-        $this->record->load('order');
-        $order = $this->record->order;
-
-        if (! $order) {
-            return;
-        }
-
-        match ($this->record->delivery_status) {
-            'assigned', 'in_progress' => $order->update(['order_status' => 'assigned']),
-            'delivered'               => $order->update(['order_status' => 'delivered']),
-            'cancelled'               => $order->order_status === 'assigned'
-                ? $order->update(['order_status' => 'confirmed'])
-                : null,
-            default => null,
-        };
+        // Order status sync and due recalculation are handled
+        // centrally by Delivery::booted() updated hook.
     }
 
     protected function getHeaderActions(): array

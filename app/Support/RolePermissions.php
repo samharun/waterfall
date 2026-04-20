@@ -46,6 +46,9 @@ class RolePermissions
         // Reports
         'reports.dashboard.view', 'reports.sales.view', 'reports.delivery.view',
         'reports.due.view', 'reports.stock.view', 'reports.customer_ledger.view',
+
+        // Due Collections
+        'due_collections.manage',
     ];
 
     public const ROLE_PERMISSIONS = [
@@ -76,15 +79,16 @@ class RolePermissions
             'jar_deposits.view', 'jar_deposits.create', 'jar_deposits.update', 'jar_deposits.delete',
             'reports.dashboard.view', 'reports.sales.view', 'reports.delivery.view',
             'reports.due.view', 'reports.stock.view', 'reports.customer_ledger.view',
+            'due_collections.manage',
         ],
 
         'delivery_manager' => [
             'reports.dashboard.view',
-            'customers.view', 'dealers.view', 'zones.view',
-            'subscriptions.view',
-            'orders.view', 'orders.update', 'orders.confirm', 'orders.cancel',
+            'customers.view', 'dealers.view',
+            'orders.view', 'orders.create', 'orders.update', 'orders.confirm', 'orders.cancel',
             'deliveries.view', 'deliveries.create', 'deliveries.update',
             'deliveries.assign', 'deliveries.mark_delivered', 'deliveries.mark_failed',
+            'due_collections.manage',
             'reports.delivery.view',
         ],
 
@@ -95,6 +99,7 @@ class RolePermissions
             'invoices.issue', 'invoices.cancel', 'invoices.print',
             'payments.view', 'payments.create', 'payments.update', 'payments.delete',
             'payments.print', 'collections.reconcile',
+            'due_collections.manage',
             'reports.sales.view', 'reports.due.view', 'reports.customer_ledger.view',
         ],
 

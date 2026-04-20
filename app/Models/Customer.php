@@ -161,15 +161,25 @@ class Customer extends Authenticatable
     }
 
     /**
-     * Recalculate current_due from non-cancelled, non-draft invoices.
+     * Recalculate current_due as:
+     *   total of all delivered order amounts
+     *   minus all accepted payments made by this customer
+     *
+     * This works whether or not invoices have been raised, because invoices
+     * are monthly aggregates and may not exist yet for recent deliveries.
      */
     public function recalculateCurrentDue(): void
     {
-        $due = $this->invoices()
-            ->whereNotIn('invoice_status', ['cancelled', 'draft'])
-            ->sum('due_amount');
+        $totalOrdered = (float) $this->orders()
+            ->where('order_status', 'delivered')
+            ->sum('total_amount');
 
-        $this->update(['current_due' => max(0, (float) $due)]);
+        $totalPaid = (float) Payment::where('customer_id', $this->id)
+            ->where('payment_type', 'customer')
+            ->where('collection_status', 'accepted')
+            ->sum('amount');
+
+        $this->update(['current_due' => max(0, $totalOrdered - $totalPaid)]);
     }
 
     /**

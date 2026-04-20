@@ -29,6 +29,9 @@ class PaymentCollectionController extends Controller
         $order  = $delivery->order;
         $party  = $order?->customer ?? $order?->dealer;
 
+        // Refresh party to get latest current_due
+        $party?->refresh();
+
         // Find best invoice to suggest
         $suggestedInvoice = $this->findSuggestedInvoice($order);
 

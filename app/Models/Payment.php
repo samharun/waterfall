@@ -27,6 +27,7 @@ class Payment extends Model
         'collection_source',
         'collection_status',
         'collected_at',
+        'collected_from_staff_id',
         'remarks',
     ];
 
@@ -94,6 +95,11 @@ class Payment extends Model
     public function delivery(): BelongsTo
     {
         return $this->belongsTo(Delivery::class);
+    }
+
+    public function collectedFromStaff(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'collected_from_staff_id');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────
