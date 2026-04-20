@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::table('zones', function (Blueprint $table) {
             // Drop old columns
+            $table->dropUnique(['slug']);
             $table->dropIndex(['is_active']);
             $table->dropIndex(['city']);
             $table->dropColumn(['slug', 'city', 'district', 'is_active']);
