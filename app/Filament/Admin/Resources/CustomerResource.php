@@ -20,6 +20,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerResource extends Resource
 {
@@ -259,6 +261,70 @@ class CustomerResource extends Resource
                     Actions\ViewAction::make(),
                     Actions\EditAction::make(),
 
+                    Actions\Action::make('change_password')
+                        ->label('Change Password')
+                        ->icon('heroicon-o-key')
+                        ->color('warning')
+                        ->modalHeading(fn (Customer $record) => "Change Password: {$record->name}")
+                        ->modalDescription(fn (Customer $record) => $record->user_id
+                            ? 'Set a new password for this customer app login.'
+                            : 'This customer does not have a linked login yet. Saving here will create one and set the password.')
+                        ->fillForm(fn (Customer $record) => [
+                            'email' => $record->user?->email ?? static::defaultCustomerLoginEmail($record),
+                        ])
+                        ->form([
+                            Forms\Components\TextInput::make('email')
+                                ->label('Login Email')
+                                ->email()
+                                ->disabled()
+                                ->dehydrated(false)
+                                ->helperText('This is the customer login account that will be updated or created.'),
+
+                            Forms\Components\TextInput::make('password')
+                                ->label('New Password')
+                                ->password()
+                                ->revealable()
+                                ->required()
+                                ->minLength(6)
+                                ->maxLength(255),
+
+                            Forms\Components\TextInput::make('password_confirmation')
+                                ->label('Confirm Password')
+                                ->password()
+                                ->revealable()
+                                ->required()
+                                ->same('password'),
+                        ])
+                        ->action(function (Customer $record, array $data) {
+                            DB::transaction(function () use ($record, $data) {
+                                $user = $record->user;
+
+                                if (! $user) {
+                                    $user = User::create([
+                                        'name' => $record->name,
+                                        'email' => static::uniqueCustomerLoginEmail($record),
+                                        'password' => Hash::make($data['password']),
+                                        'role' => 'customer',
+                                    ]);
+
+                                    $record->update(['user_id' => $user->id]);
+
+                                    return;
+                                }
+
+                                $user->update([
+                                    'name' => $record->name,
+                                    'password' => Hash::make($data['password']),
+                                ]);
+                            });
+
+                            Notification::make()
+                                ->title('Customer password updated')
+                                ->success()
+                                ->body('The customer can now sign in with the new password.')
+                                ->send();
+                        }),
+
                 Actions\Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
@@ -411,5 +477,25 @@ class CustomerResource extends Resource
         return parent::getRecordRouteBindingEloquentQuery()->withoutGlobalScopes([
             SoftDeletingScope::class,
         ]);
+    }
+
+    protected static function defaultCustomerLoginEmail(Customer $record): string
+    {
+        return $record->email ?: sprintf('%s-customer@waterfall.local', $record->mobile);
+    }
+
+    protected static function uniqueCustomerLoginEmail(Customer $record): string
+    {
+        $baseEmail = static::defaultCustomerLoginEmail($record);
+
+        if (! User::where('email', $baseEmail)->exists()) {
+            return $baseEmail;
+        }
+
+        [$localPart, $domain] = str_contains($baseEmail, '@')
+            ? explode('@', $baseEmail, 2)
+            : [$baseEmail, 'waterfall.local'];
+
+        return sprintf('%s+customer%s@%s', $localPart, $record->id, $domain);
     }
 }

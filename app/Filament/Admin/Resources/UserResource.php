@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -58,8 +59,10 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->password()
                             ->revealable()
+                            ->afterStateHydrated(fn (Forms\Components\TextInput $component) => $component->state(''))
                             ->required(fn (string $operation) => $operation === 'create')
                             ->dehydrated(fn (?string $state) => filled($state))
+                            ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
                             ->maxLength(255)
                             ->helperText('Leave blank to keep current password (on edit).'),
                     ]),
