@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Api\Customer;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\Customer\Concerns\ApiResponse;
-use App\Filament\Admin\Resources\OrderResource;
+use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification as FilamentNotification;
+use App\Notifications\NewCustomerOrderPlacedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -189,31 +187,12 @@ class OrderController extends Controller
 
     protected function notifyBackOfficeUsersAboutNewOrder(Order $order): void
     {
-        $order->loadMissing(['customer', 'zone']);
-
         $recipients = User::query()
             ->whereIn('role', ['super_admin', 'admin', 'delivery_manager'])
             ->get();
 
-        if ($recipients->isEmpty()) {
-            return;
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new NewCustomerOrderPlacedNotification($order));
         }
-
-        $customerName = $order->customer?->name ?? 'Customer';
-        $zoneName = $order->zone?->name ?? 'Unassigned zone';
-        $amount = number_format((float) $order->total_amount, 2);
-
-        FilamentNotification::make()
-            ->title("New order {$order->order_no}")
-            ->body("{$customerName} placed a customer order for Tk {$amount} in {$zoneName}.")
-            ->icon('heroicon-o-shopping-cart')
-            ->iconColor('warning')
-            ->actions([
-                Action::make('viewOrder')
-                    ->label('View order')
-                    ->button()
-                    ->url(OrderResource::getUrl('edit', ['record' => $order]), shouldOpenInNewTab: true),
-            ])
-            ->sendToDatabase($recipients);
     }
 }
