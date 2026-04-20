@@ -109,8 +109,10 @@ class UserResource extends Resource
                     ->options(User::ROLES),
             ])
             ->actions([
-                Actions\EditAction::make(),
-                Actions\DeleteAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make(),
+                    Actions\DeleteAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

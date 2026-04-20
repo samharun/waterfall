@@ -293,8 +293,9 @@ class DeliveryResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Actions\ViewAction::make(),
-                Actions\EditAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
 
                 // Mark Assigned
                 Actions\Action::make('mark_assigned')
@@ -370,8 +371,9 @@ class DeliveryResource extends Resource
                         Notification::make()->title('Delivery cancelled')->send();
                     }),
 
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
+                    Actions\DeleteAction::make(),
+                    Actions\RestoreAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

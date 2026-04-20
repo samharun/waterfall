@@ -486,8 +486,9 @@ class OrderResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Actions\ViewAction::make(),
-                Actions\EditAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
 
                 Actions\Action::make('confirm')
                     ->label('Confirm')
@@ -575,8 +576,9 @@ class OrderResource extends Resource
                         Notification::make()->title('Delivery staff assigned successfully')->success()->send();
                     }),
 
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
+                    Actions\DeleteAction::make(),
+                    Actions\RestoreAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

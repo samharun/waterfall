@@ -317,8 +317,9 @@ class InvoiceResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Actions\ViewAction::make(),
-                Actions\EditAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
 
                 // Mark Issued
                 Actions\Action::make('mark_issued')
@@ -405,8 +406,9 @@ class InvoiceResource extends Resource
                     ->url(fn (Invoice $record) => route('admin.invoices.print', $record))
                     ->openUrlInNewTab(),
 
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
+                    Actions\DeleteAction::make(),
+                    Actions\RestoreAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

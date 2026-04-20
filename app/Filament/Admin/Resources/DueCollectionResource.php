@@ -323,8 +323,9 @@ class DueCollectionResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Actions\ViewAction::make(),
-                Actions\EditAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
 
                 Actions\Action::make('accept')
                     ->label('Accept')
@@ -360,8 +361,9 @@ class DueCollectionResource extends Resource
                         Notification::make()->title('Collection rejected')->warning()->send();
                     }),
 
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
+                    Actions\DeleteAction::make(),
+                    Actions\RestoreAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

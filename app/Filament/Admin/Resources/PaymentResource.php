@@ -292,17 +292,19 @@ class PaymentResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Actions\ViewAction::make(),
-                Actions\EditAction::make(),
-                Actions\Action::make('print_receipt')
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
+                    Actions\Action::make('print_receipt')
                     ->label('Print')
                     ->icon('heroicon-o-printer')
                     ->color('gray')
                     ->visible(fn () => auth()->user()?->can('payments.print'))
                     ->url(fn (Payment $record) => route('admin.payments.print', $record))
                     ->openUrlInNewTab(),
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
+                    Actions\DeleteAction::make(),
+                    Actions\RestoreAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

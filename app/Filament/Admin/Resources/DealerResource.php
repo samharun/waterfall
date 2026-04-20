@@ -205,8 +205,9 @@ class DealerResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Actions\ViewAction::make(),
-                Actions\EditAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
 
                 Actions\Action::make('approve')
                     ->label('Approve')
@@ -248,8 +249,9 @@ class DealerResource extends Resource
                         Notification::make()->title('Dealer marked inactive')->send();
                     }),
 
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
+                    Actions\DeleteAction::make(),
+                    Actions\RestoreAction::make(),
+                ])->label('Actions'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
