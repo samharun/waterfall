@@ -14,8 +14,12 @@
         .logo-sub { font-size: .85rem; color: #64748b; margin-top: .2rem; }
         .form-group { margin-bottom: 1rem; }
         .form-label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .35rem; color: #374151; }
-        .form-control { width: 100%; padding: .7rem .9rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: border-color .15s; }
+        .form-control { width: 100%; padding: .7rem .9rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: border-color .15s; color: #111827; background: #ffffff; -webkit-text-fill-color: #111827; caret-color: #111827; }
         .form-control:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+        .form-control::placeholder { color: #9ca3af; opacity: 1; }
+        .form-control:-webkit-autofill,
+        .form-control:-webkit-autofill:hover,
+        .form-control:-webkit-autofill:focus { -webkit-text-fill-color: #111827; -webkit-box-shadow: 0 0 0 1000px #ffffff inset; box-shadow: 0 0 0 1000px #ffffff inset; }
         .form-control.is-invalid { border-color: #ef4444; }
         .invalid-feedback { color: #ef4444; font-size: .82rem; margin-top: .3rem; }
         .btn-login { width: 100%; padding: .8rem; background: #f59e0b; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: .5rem; transition: opacity .15s; }
