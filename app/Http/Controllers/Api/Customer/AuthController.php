@@ -57,11 +57,10 @@ class AuthController extends Controller
             ]);
         });
 
-        $this->generateOtp($data['mobile'], 'registration');
         $locale = $this->resolveLocale($request);
 
         return $this->success(
-            'Registration submitted successfully. Admin will approve the account and assign the zone later.',
+            'Registration submitted successfully. Your account is now waiting for admin approval.',
             [
                 'customer_id' => $customer->customer_id,
                 'account_status' => $customer->approval_status,
@@ -127,6 +126,18 @@ class AuthController extends Controller
             ]);
         } catch (ValidationException $e) {
             return $this->validationError($e->errors());
+        }
+
+        if ($data['type'] === 'registration') {
+            $customer = Customer::with('zone')->where('mobile', $data['mobile'])->first();
+
+            if (! $customer) {
+                return $this->error('Customer account not found.', 404);
+            }
+
+            return $this->success('OTP verification is disabled for registration. Your account is waiting for admin approval.', [
+                'account_status' => $customer->approval_status,
+            ]);
         }
 
         $locale = $this->resolveLocale($request);

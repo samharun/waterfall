@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Pending — Waterfall</title>
+    <title>{{ __('customer.registration_pending_page_title') }}</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -21,18 +21,16 @@
 <body>
 <div class="box">
     <img src="{{ asset('images/waterfall-logo.png') }}" alt="Waterfall Logo" class="logo-img">
-    <div class="icon">⏳</div>
-    <div class="title">Registration Submitted!</div>
+    <div class="icon">&#9203;</div>
+    <div class="title">{{ __('customer.registration_pending_title') }}</div>
     <div class="message">
-        Your mobile number has been verified successfully.
-        Your Waterfall account is now <strong>pending admin approval</strong>.
+        {{ __('customer.registration_pending_message') }}
     </div>
     <div class="highlight">
-        You will be able to login after an admin reviews and approves your account.
-        This usually takes 1–2 business days.
+        {{ __('customer.registration_pending_highlight') }}
     </div>
-    <a href="{{ route('customer.login') }}" class="btn">Go to Login</a>
-    <div class="support-note">Need help? Contact Waterfall support.</div>
+    <a href="{{ route('customer.login') }}" class="btn">{{ __('customer.registration_pending_login') }}</a>
+    <div class="support-note">{{ __('customer.registration_pending_support') }}</div>
 </div>
 </body>
 </html>
