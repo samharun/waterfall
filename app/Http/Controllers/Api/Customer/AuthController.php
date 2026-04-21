@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -22,17 +23,22 @@ class AuthController extends Controller
         try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
-                'mobile' => ['required', 'string', 'regex:/^01[3-9][0-9]{8}$/'],
+                'mobile' => [
+                    'required',
+                    'string',
+                    'regex:/^01[3-9][0-9]{8}$/',
+                    Rule::unique('customers', 'mobile'),
+                ],
                 'password' => ['required', 'string', 'min:6', 'confirmed'],
                 'language_code' => 'nullable|string|max:10',
                 'preferred_language' => 'nullable|string|max:10',
+            ], [
+                'mobile.required' => 'Please enter your mobile number.',
+                'mobile.regex' => 'Please enter a valid Bangladesh mobile number (01XXXXXXXXX).',
+                'mobile.unique' => 'This mobile number is already registered.',
             ]);
         } catch (ValidationException $e) {
             return $this->validationError($e->errors());
-        }
-
-        if (Customer::where('mobile', $data['mobile'])->exists()) {
-            return $this->error('Mobile number already registered.', 422);
         }
 
         $email = sprintf('%s-customer@waterfall.local', $data['mobile']);

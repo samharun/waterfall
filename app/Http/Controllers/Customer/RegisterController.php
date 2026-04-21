@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
@@ -25,15 +26,18 @@ class RegisterController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'mobile' => ['required', 'string', 'regex:/^01[3-9][0-9]{8}$/'],
+            'mobile' => [
+                'required',
+                'string',
+                'regex:/^01[3-9][0-9]{8}$/',
+                Rule::unique('customers', 'mobile'),
+            ],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ], [
+            'mobile.required' => 'Please enter your mobile number.',
             'mobile.regex' => 'Please enter a valid Bangladesh mobile number (01XXXXXXXXX).',
+            'mobile.unique' => 'This mobile number is already registered.',
         ]);
-
-        if (Customer::where('mobile', $validated['mobile'])->exists()) {
-            return back()->withErrors(['mobile' => 'Mobile number already registered.'])->withInput();
-        }
 
         try {
             DB::transaction(function () use ($validated) {
