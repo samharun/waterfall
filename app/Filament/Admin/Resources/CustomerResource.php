@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\User;
 use App\Models\Zone;
 use App\Notifications\CustomerApprovedNotification;
+use App\Support\SafeNotifier;
 use BackedEnum;
 use Filament\Actions;
 use Filament\Forms;
@@ -358,14 +359,29 @@ class CustomerResource extends Resource
                             'approved_at'     => now(),
                         ]);
 
+                        $emailNotificationFailed = false;
+
                         if ($record->email && $record->user) {
-                            $record->user->notify(new CustomerApprovedNotification($record));
+                            $emailNotificationFailed = ! SafeNotifier::send(
+                                $record->user,
+                                new CustomerApprovedNotification($record),
+                                [
+                                    'context' => 'customer_approved',
+                                    'customer_id' => $record->id,
+                                    'user_id' => $record->user->id,
+                                ]
+                            );
                         }
 
-                        Notification::make()
+                        $notification = Notification::make()
                             ->title('Customer approved')
-                            ->success()
-                            ->send();
+                            ->success();
+
+                        if ($emailNotificationFailed) {
+                            $notification->body('Customer was approved, but the approval email could not be sent because mail is not configured correctly.');
+                        }
+
+                        $notification->send();
                     }),
 
                 Actions\Action::make('reject')

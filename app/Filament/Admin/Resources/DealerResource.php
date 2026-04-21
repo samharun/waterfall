@@ -7,6 +7,7 @@ use App\Models\Dealer;
 use App\Models\User;
 use App\Models\Zone;
 use App\Notifications\DealerApprovedNotification;
+use App\Support\SafeNotifier;
 use BackedEnum;
 use Filament\Actions;
 use Filament\Forms;
@@ -221,10 +222,30 @@ class DealerResource extends Resource
                             'approved_by'     => Auth::id(),
                             'approved_at'     => now(),
                         ]);
+
+                        $emailNotificationFailed = false;
+
                         if ($record->email && $record->user) {
-                            $record->user->notify(new DealerApprovedNotification($record));
+                            $emailNotificationFailed = ! SafeNotifier::send(
+                                $record->user,
+                                new DealerApprovedNotification($record),
+                                [
+                                    'context' => 'dealer_approved',
+                                    'dealer_id' => $record->id,
+                                    'user_id' => $record->user->id,
+                                ]
+                            );
                         }
-                        Notification::make()->title('Dealer approved')->success()->send();
+
+                        $notification = Notification::make()
+                            ->title('Dealer approved')
+                            ->success();
+
+                        if ($emailNotificationFailed) {
+                            $notification->body('Dealer was approved, but the approval email could not be sent because mail is not configured correctly.');
+                        }
+
+                        $notification->send();
                     }),
 
                 Actions\Action::make('reject')

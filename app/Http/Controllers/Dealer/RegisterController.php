@@ -7,6 +7,7 @@ use App\Models\Dealer;
 use App\Models\CustomerOtp;
 use App\Models\User;
 use App\Models\Zone;
+use App\Support\SafeNotifier;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -167,7 +168,15 @@ class RegisterController extends Controller
                 Log::info("New dealer registration pending approval: {$payload['mobile']}");
 
                 User::whereIn('role', ['super_admin', 'admin'])->each(function (User $admin) use ($payload) {
-                    $admin->notify(new \App\Notifications\NewRegistrationPendingNotification('dealer', $payload['name'], $payload['mobile']));
+                    SafeNotifier::send(
+                        $admin,
+                        new \App\Notifications\NewRegistrationPendingNotification('dealer', $payload['name'], $payload['mobile']),
+                        [
+                            'context' => 'dealer_registration_pending',
+                            'mobile' => $payload['mobile'],
+                            'admin_user_id' => $admin->id,
+                        ]
+                    );
                 });
             });
         } catch (\Throwable $e) {
