@@ -13,6 +13,12 @@ return [
     'hero_subtitle' => 'Waterfall makes jar ordering, delivery management, monthly billing, customer dues, and zone-wise delivery operation simple for homes, offices, dealers, and distributors.',
     'register_customer' => 'Register Customer',
     'download_app' => 'Download App',
+    'coverage_title' => 'Current Coverage Areas',
+    'coverage_subtitle' => 'Now serving these neighborhoods with fast doorstep delivery.',
+    'coverage_city' => 'Chattogram',
+    'coverage_map_aria' => 'Coverage map for Chattogram service areas',
+    'coverage_area_chawkbazar' => 'Chawkbazar',
+    'coverage_area_west_bakolia' => 'West Bakolia',
 
     // Phone Mockup
     'my_water_order' => 'My Water Order',

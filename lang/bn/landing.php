@@ -13,6 +13,12 @@ return [
     'hero_subtitle' => 'ওয়াটারফল জার অর্ডারিং, ডেলিভারি ম্যানেজমেন্ট, মাসিক বিলিং, গ্রাহকের বকেয়া এবং এলাকাভিত্তিক ডেলিভারি অপারেশনকে ঘর, অফিস, ডিলার এবং ডিস্ট্রিবিউটরদের জন্য সহজ করে তোলে।',
     'register_customer' => 'গ্রাহক নিবন্ধন',
     'download_app' => 'অ্যাপ ডাউনলোড',
+    'coverage_title' => 'বর্তমান সেবা এলাকা',
+    'coverage_subtitle' => 'এখন দ্রুত হোম ডেলিভারি সেবা পাওয়া যাচ্ছে এই এলাকাগুলোতে।',
+    'coverage_city' => 'চট্টগ্রাম',
+    'coverage_map_aria' => 'চট্টগ্রাম সেবা এলাকার ম্যাপ',
+    'coverage_area_chawkbazar' => 'চকবাজার',
+    'coverage_area_west_bakolia' => 'পশ্চিম বাকলিয়া',
 
     // Phone Mockup
     'my_water_order' => 'আমার পানির অর্ডার',
@@ -72,9 +78,9 @@ return [
     'footer_promo_title' => 'বিশুদ্ধ, সতেজ ও দ্রুত পানি ডেলিভারি',
     'footer_promo_subtitle' => 'যেকোনো সময় আপনার দরজায় পরিষ্কার ও সতেজ পানি পৌঁছে দিন।',
     'footer_promo_order_now' => 'এখন অর্ডার করুন',
-    'footer_promo_learn_more' => 'আরো জানুন',
+    'footer_promo_learn_more' => 'আরও জানুন',
 
     // Footer
-    'footer_brand' => 'ওয়াটারফল — পরিষ্কার পানীয় পানি ডেলিভারি সিস্টেম',
+    'footer_brand' => 'ওয়াটারফল - পরিষ্কার পানীয় পানি ডেলিভারি সিস্টেম',
     'footer_copyright' => '© :year ওয়াটারফল। সর্বস্বত্ব সংরক্ষিত।',
 ];

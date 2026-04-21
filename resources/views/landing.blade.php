@@ -237,6 +237,186 @@
             font-size: 16px;
         }
 
+        .coverage-card {
+            margin-top: 18px;
+            max-width: 560px;
+            padding: 16px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+        }
+
+        .coverage-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .coverage-card-header i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            font-size: 16px;
+        }
+
+        .coverage-card-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .coverage-card-subtitle {
+            margin: 0;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .coverage-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .coverage-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #0f3d63;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+        }
+
+        .coverage-pill i {
+            font-size: 13px;
+            color: #0d6efd;
+        }
+
+        .coverage-map {
+            position: relative;
+            min-height: 168px;
+            padding: 16px;
+            overflow: hidden;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 22% 24%, rgba(255, 255, 255, 0.3) 0, rgba(255, 255, 255, 0) 22%),
+                radial-gradient(circle at 74% 36%, rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0) 20%),
+                linear-gradient(135deg, rgba(7, 84, 152, 0.78), rgba(42, 167, 214, 0.58));
+            border: 1px solid rgba(255, 255, 255, 0.22);
+        }
+
+        .coverage-map::before {
+            content: "";
+            position: absolute;
+            inset: 14px;
+            border-radius: 14px;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.45;
+        }
+
+        .coverage-map-region {
+            position: absolute;
+            inset: 30px 72px 24px 34px;
+            border-radius: 42% 58% 48% 52% / 40% 46% 54% 60%;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .coverage-map-city {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            backdrop-filter: blur(6px);
+        }
+
+        .coverage-map-point {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .coverage-map-dot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #0d6efd;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+        }
+
+        .coverage-map-dot::after {
+            content: "";
+            position: absolute;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            animation: coveragePulse 2.6s ease-out infinite;
+        }
+
+        .coverage-map-label {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.62);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .coverage-map-point.point-chawkbazar {
+            top: 44%;
+            left: 34%;
+        }
+
+        .coverage-map-point.point-west-bakolia {
+            top: 62%;
+            left: 60%;
+        }
+
+        @keyframes coveragePulse {
+            0% {
+                transform: scale(0.7);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: scale(1.35);
+                opacity: 0;
+            }
+        }
+
         /* ================================
            Phone Mockup - Compact Version
         ================================ */
@@ -571,6 +751,15 @@
                 margin-top: 35px;
             }
 
+            .coverage-card {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .coverage-map {
+                min-height: 156px;
+            }
+
             .phone-screen {
                 padding: 20px 16px;
             }
@@ -626,6 +815,57 @@
             .hero-actions .btn {
                 width: 100%;
                 font-size: 15px;
+            }
+
+            .coverage-card {
+                padding: 14px 15px;
+                border-radius: 18px;
+            }
+
+            .coverage-card-header {
+                align-items: flex-start;
+            }
+
+            .coverage-card-title {
+                font-size: 14px;
+            }
+
+            .coverage-card-subtitle {
+                font-size: 12px;
+            }
+
+            .coverage-pill {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .coverage-map {
+                min-height: 188px;
+                padding: 14px;
+            }
+
+            .coverage-map-region {
+                inset: 42px 18px 20px 18px;
+            }
+
+            .coverage-map-city {
+                top: 12px;
+                right: 12px;
+                font-size: 12px;
+            }
+
+            .coverage-map-point.point-chawkbazar {
+                top: 46%;
+                left: 38%;
+            }
+
+            .coverage-map-point.point-west-bakolia {
+                top: 68%;
+                left: 62%;
+            }
+
+            .coverage-map-label {
+                font-size: 11px;
             }
 
             .phone-mockup {
@@ -735,10 +975,7 @@
     <div class="container hero-content">
         <div class="row align-items-center">
             <div class="col-lg-7">
-                <div class="hero-badge">
-                    <i class="bi bi-shield-check"></i>
-                    {{ __('landing.hero_badge') }}
-                </div>
+              
 
                 <h1 class="hero-title">
                     {{ __('landing.hero_title') }}
@@ -758,6 +995,37 @@
                        class="btn btn-primary btn-lg rounded-pill px-4 fw-bold border border-light">
                         <i class="bi bi-download me-2"></i>{{ __('landing.download_app') }}
                     </a>
+                </div>
+
+                <div class="coverage-card">
+                    <div class="coverage-card-header">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <p class="coverage-card-title">{{ __('landing.coverage_title') }}</p>
+                            <p class="coverage-card-subtitle">{{ __('landing.coverage_subtitle') }}</p>
+                        </div>
+                    </div>
+
+                   
+
+                    <div class="coverage-map" aria-label="{{ __('landing.coverage_map_aria') }}">
+                        <div class="coverage-map-city">{{ __('landing.coverage_city') }}</div>
+                        <div class="coverage-map-region"></div>
+
+                        <div class="coverage-map-point point-chawkbazar">
+                            <span class="coverage-map-dot">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </span>
+                            <span class="coverage-map-label">{{ __('landing.coverage_area_chawkbazar') }}</span>
+                        </div>
+
+                        <div class="coverage-map-point point-west-bakolia">
+                            <span class="coverage-map-dot">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </span>
+                            <span class="coverage-map-label">{{ __('landing.coverage_area_west_bakolia') }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
