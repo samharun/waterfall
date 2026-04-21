@@ -718,6 +718,149 @@
             color: #ffffff;
         }
 
+        .gallery-section {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top left, rgba(53, 198, 244, 0.14), transparent 28%),
+                linear-gradient(180deg, #f7fbff 0%, #edf6ff 100%);
+        }
+
+        .gallery-shell {
+            padding: 18px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(13, 110, 253, 0.08);
+        }
+
+        .gallery-carousel {
+            overflow: hidden;
+            border-radius: 24px;
+            background: #0b2642;
+        }
+
+        .gallery-slide {
+            position: relative;
+            min-height: 470px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .gallery-slide::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(4, 20, 45, 0.8) 0%, rgba(4, 20, 45, 0.38) 45%, rgba(4, 20, 45, 0.18) 100%),
+                linear-gradient(180deg, rgba(4, 20, 45, 0.1) 0%, rgba(4, 20, 45, 0.55) 100%);
+        }
+
+        .gallery-slide-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: end;
+            min-height: 470px;
+            padding: 40px;
+            color: #ffffff;
+        }
+
+        .gallery-copy {
+            max-width: 540px;
+        }
+
+        .gallery-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(8px);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .gallery-title {
+            margin-bottom: 12px;
+            font-size: 34px;
+            line-height: 1.15;
+            font-weight: 800;
+        }
+
+        .gallery-description {
+            margin-bottom: 22px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .gallery-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gallery-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .gallery-carousel .carousel-indicators {
+            bottom: 16px;
+            margin-bottom: 0;
+        }
+
+        .gallery-carousel .carousel-indicators [data-bs-target] {
+            width: 10px;
+            height: 10px;
+            border: 0;
+            border-radius: 50%;
+            opacity: 0.5;
+            background-color: #ffffff;
+        }
+
+        .gallery-carousel .carousel-control-prev,
+        .gallery-carousel .carousel-control-next {
+            top: 24px;
+            bottom: auto;
+            width: 54px;
+            height: 54px;
+            opacity: 1;
+        }
+
+        .gallery-carousel .carousel-control-prev {
+            left: auto;
+            right: 88px;
+        }
+
+        .gallery-carousel .carousel-control-next {
+            right: 24px;
+        }
+
+        .gallery-carousel .carousel-control-prev-icon,
+        .gallery-carousel .carousel-control-next-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.16);
+            background-size: 1.15rem;
+            backdrop-filter: blur(6px);
+        }
+
         /* ================================
            Responsive Design
         ================================ */
@@ -791,6 +934,19 @@
             .section-title {
                 font-size: 28px;
             }
+
+            .gallery-slide,
+            .gallery-slide-content {
+                min-height: 420px;
+            }
+
+            .gallery-slide-content {
+                padding: 32px 24px;
+            }
+
+            .gallery-title {
+                font-size: 29px;
+            }
         }
 
         @media (max-width: 575px) {
@@ -837,6 +993,50 @@
             .coverage-pill {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .gallery-shell {
+                padding: 12px;
+                border-radius: 22px;
+            }
+
+            .gallery-slide,
+            .gallery-slide-content {
+                min-height: 440px;
+            }
+
+            .gallery-slide-content {
+                padding: 96px 18px 26px;
+                align-items: end;
+            }
+
+            .gallery-title {
+                font-size: 24px;
+            }
+
+            .gallery-description {
+                font-size: 15px;
+            }
+
+            .gallery-carousel .carousel-control-prev,
+            .gallery-carousel .carousel-control-next {
+                top: 14px;
+                width: 44px;
+                height: 44px;
+            }
+
+            .gallery-carousel .carousel-control-prev {
+                right: 64px;
+            }
+
+            .gallery-carousel .carousel-control-next {
+                right: 14px;
+            }
+
+            .gallery-carousel .carousel-control-prev-icon,
+            .gallery-carousel .carousel-control-next-icon {
+                width: 44px;
+                height: 44px;
             }
 
             .coverage-map {
@@ -918,6 +1118,49 @@
 </head>
 
 <body>
+@php
+    $gallerySlides = [
+        [
+            'image' => 'images/landing/water-plant-1.jpg',
+            'fallback' => 'images/waterfall-hero-bg.png',
+            'kicker' => __('landing.gallery_slide_1_kicker'),
+            'title' => __('landing.gallery_slide_1_title'),
+            'description' => __('landing.gallery_slide_1_desc'),
+            'meta' => [__('landing.gallery_meta_purification'), __('landing.gallery_meta_hygiene')],
+        ],
+        [
+            'image' => 'images/landing/water-plant-2.jpg',
+            'fallback' => 'images/waterfall-hero-bg.png',
+            'kicker' => __('landing.gallery_slide_2_kicker'),
+            'title' => __('landing.gallery_slide_2_title'),
+            'description' => __('landing.gallery_slide_2_desc'),
+            'meta' => [__('landing.gallery_meta_bottling'), __('landing.gallery_meta_quality_check')],
+        ],
+        [
+            'image' => 'images/landing/delivery-process-1.jpg',
+            'fallback' => 'images/jar.png',
+            'kicker' => __('landing.gallery_slide_3_kicker'),
+            'title' => __('landing.gallery_slide_3_title'),
+            'description' => __('landing.gallery_slide_3_desc'),
+            'meta' => [__('landing.gallery_meta_route_planning'), __('landing.gallery_meta_fast_dispatch')],
+        ],
+        [
+            'image' => 'images/landing/delivery-process-2.jpg',
+            'fallback' => 'images/waterfall-hero-bg.png',
+            'kicker' => __('landing.gallery_slide_4_kicker'),
+            'title' => __('landing.gallery_slide_4_title'),
+            'description' => __('landing.gallery_slide_4_desc'),
+            'meta' => [__('landing.gallery_meta_doorstep_delivery'), __('landing.gallery_meta_customer_service')],
+        ],
+    ];
+
+    $gallerySlides = array_map(function (array $slide) {
+        $resolvedImage = file_exists(public_path($slide['image'])) ? $slide['image'] : $slide['fallback'];
+        $slide['url'] = asset($resolvedImage);
+
+        return $slide;
+    }, $gallerySlides);
+@endphp
 
 {{-- Navbar --}}
 <nav class="navbar navbar-expand-lg sticky-top">
@@ -1089,6 +1332,71 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- Plant & Delivery Gallery --}}
+<section class="section-padding gallery-section">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="section-title">{{ __('landing.gallery_title') }}</h2>
+            <p class="section-subtitle">
+                {{ __('landing.gallery_subtitle') }}
+            </p>
+        </div>
+
+        <div class="gallery-shell">
+            <div id="plantDeliveryGallery" class="carousel slide gallery-carousel" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    @foreach ($gallerySlides as $index => $slide)
+                        <button type="button"
+                                data-bs-target="#plantDeliveryGallery"
+                                data-bs-slide-to="{{ $index }}"
+                                class="{{ $index === 0 ? 'active' : '' }}"
+                                aria-current="{{ $index === 0 ? 'true' : 'false' }}"
+                                aria-label="Slide {{ $index + 1 }}"></button>
+                    @endforeach
+                </div>
+
+                <div class="carousel-inner">
+                    @foreach ($gallerySlides as $index => $slide)
+                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                            <div class="gallery-slide" style="background-image: url('{{ $slide['url'] }}');">
+                                <div class="gallery-slide-content">
+                                    <div class="gallery-copy">
+                                        <div class="gallery-kicker">
+                                            <i class="bi bi-droplet-half"></i>
+                                            {{ $slide['kicker'] }}
+                                        </div>
+
+                                        <h3 class="gallery-title">{{ $slide['title'] }}</h3>
+                                        <p class="gallery-description">{{ $slide['description'] }}</p>
+
+                                        <div class="gallery-meta">
+                                            @foreach ($slide['meta'] as $meta)
+                                                <span class="gallery-meta-item">
+                                                    <i class="bi bi-check2-circle"></i>
+                                                    {{ $meta }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#plantDeliveryGallery" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#plantDeliveryGallery" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
         </div>
     </div>
