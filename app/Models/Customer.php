@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 class Customer extends Authenticatable
 {
-    use SoftDeletes, HasApiTokens;
+    use HasApiTokens, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -36,9 +37,9 @@ class Customer extends Authenticatable
 
     protected $casts = [
         'opening_balance' => 'decimal:2',
-        'current_due'     => 'decimal:2',
+        'current_due' => 'decimal:2',
         'jar_deposit_qty' => 'integer',
-        'approved_at'     => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     // ── Boot ───────────────────────────────────────────────────────
@@ -55,7 +56,8 @@ class Customer extends Authenticatable
     public static function generateCustomerId(): string
     {
         $max = self::withTrashed()->max('id') ?? 0;
-        return 'WF-CUS-' . str_pad($max + 1, 6, '0', STR_PAD_LEFT);
+
+        return 'WF-CUS-'.str_pad($max + 1, 6, '0', STR_PAD_LEFT);
     }
 
     // ── Relationships ──────────────────────────────────────────────
@@ -105,7 +107,17 @@ class Customer extends Authenticatable
         return $this->hasMany(CustomerSubscription::class);
     }
 
-    public function activeSubscription(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(CustomerDeviceToken::class);
+    }
+
+    public function customerNotifications(): HasMany
+    {
+        return $this->hasMany(CustomerNotification::class);
+    }
+
+    public function activeSubscription(): HasOne
     {
         return $this->hasOne(CustomerSubscription::class)
             ->whereIn('status', ['active', 'paused'])
@@ -135,14 +147,14 @@ class Customer extends Authenticatable
     {
         return [
             'residential' => 'Residential',
-            'corporate'   => 'Corporate',
+            'corporate' => 'Corporate',
         ];
     }
 
     public static function approvalStatusLabels(): array
     {
         return [
-            'pending'  => 'Pending',
+            'pending' => 'Pending',
             'approved' => 'Approved',
             'rejected' => 'Rejected',
             'inactive' => 'Inactive',
@@ -152,11 +164,11 @@ class Customer extends Authenticatable
     public static function deliverySlotLabels(): array
     {
         return [
-            'now'       => 'Now',
-            'morning'   => 'Morning',
+            'now' => 'Now',
+            'morning' => 'Morning',
             'afternoon' => 'Afternoon',
-            'evening'   => 'Evening',
-            'custom'    => 'Custom',
+            'evening' => 'Evening',
+            'custom' => 'Custom',
         ];
     }
 

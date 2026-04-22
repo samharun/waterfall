@@ -7,6 +7,7 @@ use App\Models\User;
 use BackedEnum;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -51,9 +52,19 @@ class UserResource extends Resource
                             ->maxLength(255)
                             ->unique(User::class, 'email', ignoreRecord: true),
 
+                        Forms\Components\TextInput::make('mobile')
+                            ->label('Phone')
+                            ->tel()
+                            ->maxLength(20)
+                            ->helperText('Required for Delivery Manager and Delivery Staff')
+                            ->required(fn (Get $get): bool => in_array($get('role'), ['delivery_manager', 'delivery_staff'], true))
+                            ->unique(User::class, 'mobile', ignoreRecord: true)
+                            ->live(),
+
                         Forms\Components\Select::make('role')
                             ->options(User::ROLES)
                             ->required()
+                            ->live()
                             ->searchable(),
 
                         Forms\Components\TextInput::make('password')
@@ -82,6 +93,12 @@ class UserResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->copyable(),
+
+                Tables\Columns\TextColumn::make('mobile')
+                    ->label('Phone')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('role')
                     ->badge()

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Events\OrderStatusChanged;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
@@ -33,12 +35,12 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'order_date'              => 'date',
+        'order_date' => 'date',
         'preferred_delivery_time' => 'datetime',
-        'subtotal'                => 'decimal:2',
-        'discount'                => 'decimal:2',
-        'delivery_charge'         => 'decimal:2',
-        'total_amount'            => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'delivery_charge' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     // ── Boot ───────────────────────────────────────────────────────
@@ -76,6 +78,13 @@ class Order extends Model
                 return;
             }
 
+            $oldStatus = (string) $order->getOriginal('order_status');
+            $newStatus = (string) $order->order_status;
+
+            if ($oldStatus !== '' && $oldStatus !== $newStatus) {
+                OrderStatusChanged::dispatch($order->fresh(), $oldStatus, $newStatus);
+            }
+
             if ($order->order_status !== 'confirmed') {
                 return;
             }
@@ -86,9 +95,9 @@ class Order extends Model
             }
 
             Delivery::create([
-                'order_id'         => $order->id,
-                'zone_id'          => $order->zone_id,
-                'delivery_status'  => 'pending',
+                'order_id' => $order->id,
+                'zone_id' => $order->zone_id,
+                'delivery_status' => 'pending',
             ]);
         });
     }
@@ -96,7 +105,8 @@ class Order extends Model
     public static function generateOrderNo(): string
     {
         $max = self::withTrashed()->max('id') ?? 0;
-        return 'WF-ORD-' . str_pad($max + 1, 6, '0', STR_PAD_LEFT);
+
+        return 'WF-ORD-'.str_pad($max + 1, 6, '0', STR_PAD_LEFT);
     }
 
     // ── Relationships ──────────────────────────────────────────────
@@ -126,7 +136,7 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    public function delivery(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function delivery(): HasOne
     {
         return $this->hasOne(Delivery::class);
     }
@@ -139,6 +149,11 @@ class Order extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(CustomerSubscription::class, 'subscription_id');
+    }
+
+    public function customerNotifications(): HasMany
+    {
+        return $this->hasMany(CustomerNotification::class);
     }
 
     // ── Scopes ─────────────────────────────────────────────────────
@@ -177,10 +192,10 @@ class Order extends Model
     public function recalculateTotals(): void
     {
         $subtotal = $this->items()->sum('line_total');
-        $total    = max(0, $subtotal - $this->discount + $this->delivery_charge);
+        $total = max(0, $subtotal - $this->discount + $this->delivery_charge);
 
         $this->update([
-            'subtotal'     => $subtotal,
+            'subtotal' => $subtotal,
             'total_amount' => $total,
         ]);
     }
@@ -210,20 +225,20 @@ class Order extends Model
     public static function deliverySlotLabels(): array
     {
         return [
-            'now'       => 'Now',
-            'morning'   => 'Morning',
+            'now' => 'Now',
+            'morning' => 'Morning',
             'afternoon' => 'Afternoon',
-            'evening'   => 'Evening',
-            'custom'    => 'Custom',
+            'evening' => 'Evening',
+            'custom' => 'Custom',
         ];
     }
 
     public static function orderStatusLabels(): array
     {
         return [
-            'pending'   => 'Pending',
+            'pending' => 'Pending',
             'confirmed' => 'Confirmed',
-            'assigned'  => 'Assigned',
+            'assigned' => 'Assigned',
             'delivered' => 'Delivered',
             'cancelled' => 'Cancelled',
         ];
@@ -232,9 +247,9 @@ class Order extends Model
     public static function paymentStatusLabels(): array
     {
         return [
-            'unpaid'  => 'Unpaid',
+            'unpaid' => 'Unpaid',
             'partial' => 'Partial',
-            'paid'    => 'Paid',
+            'paid' => 'Paid',
         ];
     }
 }

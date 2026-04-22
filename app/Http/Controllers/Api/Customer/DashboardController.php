@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\Customer\Concerns\ApiResponse;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,8 @@ class DashboardController extends Controller
     public function index(Request $request): JsonResponse
     {
         $locale   = $this->resolveLocale($request);
-        $customer = $request->user()->load('zone')->fresh(); // fresh() ensures current_due is up-to-date
+        $customer = $request->user()->load('zone.deliveryManager')->fresh(); // fresh() ensures current_due is up-to-date
+        $customer->loadMissing('zone.deliveryManager');
 
         $latestOrder = Order::forCustomer($customer->id)
             ->with(['items.product', 'delivery'])
@@ -72,6 +74,40 @@ class DashboardController extends Controller
                 'status'        => $latestInvoice->invoice_status,
                 'status_label'  => $this->translateStatus($latestInvoice->invoice_status, $locale),
             ] : null,
+            'emergency_contact' => $this->buildEmergencyContact($customer),
         ]);
+    }
+
+    public function emergencyContact(Request $request): JsonResponse
+    {
+        /** @var Customer $customer */
+        $customer = $request->user()->load('zone.deliveryManager');
+
+        return $this->success('Emergency contact retrieved.', [
+            'emergency_contact' => $this->buildEmergencyContact($customer),
+        ]);
+    }
+
+    private function buildEmergencyContact(Customer $customer): ?array
+    {
+        $zone = $customer->zone;
+        $manager = $zone?->deliveryManager;
+
+        if (! $zone || ! $manager) {
+            return null;
+        }
+
+        return [
+            'name' => $manager->name,
+            'email' => $manager->email,
+            'phone' => $manager->mobile,
+            'mobile' => $manager->mobile,
+            'designation' => 'Delivery Manager',
+            'zone' => [
+                'id' => $zone->id,
+                'name' => $zone->name,
+                'code' => $zone->code,
+            ],
+        ];
     }
 }
