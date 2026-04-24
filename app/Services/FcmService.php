@@ -6,6 +6,7 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 use Throwable;
 
 class FcmService
@@ -33,6 +34,8 @@ class FcmService
                     'error' => 'FCM configuration missing.',
                 ];
             }
+
+            $this->assertServiceAccountCredentials($credentialPath);
 
             $accessToken = $this->accessToken($credentialPath);
             $response = Http::withToken($accessToken)
@@ -126,5 +129,32 @@ class FcmService
 
             return $accessToken;
         });
+    }
+
+    private function assertServiceAccountCredentials(string $credentialPath): void
+    {
+        try {
+            $payload = json_decode((string) file_get_contents($credentialPath), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new \RuntimeException('Firebase credentials file is not valid JSON.', previous: $exception);
+        }
+
+        if (! is_array($payload)) {
+            throw new \RuntimeException('Firebase credentials file is not a valid JSON object.');
+        }
+
+        $requiredKeys = ['type', 'project_id', 'client_email', 'private_key'];
+
+        foreach ($requiredKeys as $requiredKey) {
+            if (! isset($payload[$requiredKey]) || ! is_string($payload[$requiredKey]) || trim($payload[$requiredKey]) === '') {
+                throw new \RuntimeException(
+                    'Firebase credentials must be a service-account JSON file with type, project_id, client_email, and private_key.'
+                );
+            }
+        }
+
+        if ($payload['type'] !== 'service_account') {
+            throw new \RuntimeException('Firebase credentials file must have type "service_account".');
+        }
     }
 }

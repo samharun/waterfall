@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 return [
 
     /*
@@ -37,9 +39,19 @@ return [
 
     'firebase' => [
         'project_id' => env('FIREBASE_PROJECT_ID'),
-        'credentials' => env('FIREBASE_CREDENTIALS')
-            ? storage_path(env('FIREBASE_CREDENTIALS'))
-            : null,
+        'credentials' => (function (): ?string {
+            $path = env('FIREBASE_CREDENTIALS');
+
+            if (! is_string($path) || $path === '') {
+                return null;
+            }
+
+            if (preg_match('/^[A-Za-z]:\\\\/', $path) === 1 || Str::startsWith($path, ['/', '\\'])) {
+                return $path;
+            }
+
+            return storage_path($path);
+        })(),
     ],
 
 ];
