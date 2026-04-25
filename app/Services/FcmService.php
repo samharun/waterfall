@@ -143,6 +143,12 @@ class FcmService
             throw new \RuntimeException('Firebase credentials file is not a valid JSON object.');
         }
 
+        if (isset($payload['project_info']) && isset($payload['client']) && ! isset($payload['private_key'])) {
+            throw new \RuntimeException(
+                'Firebase credentials must be a service-account JSON file, not the mobile google-services.json file.'
+            );
+        }
+
         $requiredKeys = ['type', 'project_id', 'client_email', 'private_key'];
 
         foreach ($requiredKeys as $requiredKey) {

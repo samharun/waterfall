@@ -50,6 +50,12 @@ return [
                 return $path;
             }
 
+            $basePath = base_path($path);
+
+            if (is_file($basePath)) {
+                return $basePath;
+            }
+
             return storage_path($path);
         })(),
     ],
