@@ -45,6 +45,10 @@
         <span class="list-value">৳{{ Bn::m($lastOrder->total_amount) }}</span>
     </div>
     <div class="list-item">
+        <span class="list-label">{{ __('customer.jars') }}</span>
+        <span class="list-value">{{ Bn::n($lastOrder->totalQuantity()) }}</span>
+    </div>
+    <div class="list-item">
         <span class="list-label">{{ __('customer.status') }}</span>
         <span class="badge badge-{{ $lastOrder->order_status }}">{{ __('customer.status_'.$lastOrder->order_status) }}</span>
     </div>

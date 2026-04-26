@@ -22,6 +22,7 @@ class DashboardController extends Controller
 
         $latestOrder = Order::forCustomer($customer->id)
             ->with(['items.product', 'delivery'])
+            ->withSum('items as total_quantity', 'quantity')
             ->latest('order_date')
             ->first();
 
@@ -59,6 +60,8 @@ class DashboardController extends Controller
                 'order_date'          => $latestOrder->order_date?->toDateString(),
                 'order_status'        => $latestOrder->order_status,
                 'order_status_label'  => $this->translateStatus($latestOrder->order_status, $locale),
+                'quantity'            => $latestOrder->totalQuantity(),
+                'total_quantity'      => $latestOrder->totalQuantity(),
                 'total_amount'        => (float) $latestOrder->total_amount,
                 'delivery_status'     => $latestOrder->delivery?->delivery_status,
                 'delivery_status_label' => $latestOrder->delivery

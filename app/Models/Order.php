@@ -200,6 +200,19 @@ class Order extends Model
         ]);
     }
 
+    public function totalQuantity(): int
+    {
+        if (array_key_exists('total_quantity', $this->attributes) && $this->attributes['total_quantity'] !== null) {
+            return (int) $this->attributes['total_quantity'];
+        }
+
+        if ($this->relationLoaded('items')) {
+            return (int) $this->items->sum('quantity');
+        }
+
+        return (int) $this->items()->sum('quantity');
+    }
+
     public function markConfirmed(): void
     {
         $this->update(['order_status' => 'confirmed']);

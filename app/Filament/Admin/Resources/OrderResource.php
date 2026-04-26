@@ -392,6 +392,10 @@ class OrderResource extends Resource
                         'danger'  => 'custom',
                     ]),
 
+                Tables\Columns\TextColumn::make('total_quantity')
+                    ->label('Jars')
+                    ->getStateUsing(fn (Order $record): int => $record->totalQuantity()),
+
                 Tables\Columns\TextColumn::make('subtotal')
                     ->label('Subtotal (৳)')
                     ->numeric(2)
@@ -452,6 +456,7 @@ class OrderResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->withSum('items as total_quantity', 'quantity'))
             ->filters([
                 Tables\Filters\SelectFilter::make('order_type')
                     ->options(Order::orderTypeLabels()),

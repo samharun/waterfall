@@ -28,6 +28,9 @@
     </div>
     <div style="text-align:right;">
         <div class="order-total">৳{{ Bn::m($order->total_amount) }}</div>
+        <div style="font-size:.78rem;color:#64748b;margin-top:.15rem;">
+            {{ Bn::n($order->totalQuantity()) }} {{ __('customer.jars') }}
+        </div>
         <a href="{{ route('customer.orders.show', $order) }}" class="btn btn-outline btn-sm" style="margin-top:.5rem;">{{ __('customer.view_details') }}</a>
     </div>
 </div>

@@ -27,21 +27,24 @@ class OrderController extends Controller
 
         $orders = Order::forCustomer($customer->id)
             ->with('delivery')
+            ->withSum('items as total_quantity', 'quantity')
             ->latest()
             ->paginate(15);
 
         $items = $orders->getCollection()->map(fn (Order $o) => [
-            'id'                   => $o->id,
-            'order_no'             => $o->order_no,
-            'order_date'           => $o->order_date?->toDateString(),
-            'delivery_slot'        => $o->preferred_delivery_slot,
-            'delivery_slot_label'  => $this->translateSlot($o->preferred_delivery_slot, $locale),
-            'total_amount'         => (float) $o->total_amount,
-            'payment_status'       => $o->payment_status,
-            'payment_status_label' => $this->translateStatus($o->payment_status, $locale),
-            'order_status'         => $o->order_status,
-            'order_status_label'   => $this->translateStatus($o->order_status, $locale),
-            'delivery_status'      => $o->delivery?->delivery_status,
+            'id'                    => $o->id,
+            'order_no'              => $o->order_no,
+            'order_date'            => $o->order_date?->toDateString(),
+            'delivery_slot'         => $o->preferred_delivery_slot,
+            'delivery_slot_label'   => $this->translateSlot($o->preferred_delivery_slot, $locale),
+            'quantity'              => $o->totalQuantity(),
+            'total_quantity'        => $o->totalQuantity(),
+            'total_amount'          => (float) $o->total_amount,
+            'payment_status'        => $o->payment_status,
+            'payment_status_label'  => $this->translateStatus($o->payment_status, $locale),
+            'order_status'          => $o->order_status,
+            'order_status_label'    => $this->translateStatus($o->order_status, $locale),
+            'delivery_status'       => $o->delivery?->delivery_status,
             'delivery_status_label' => $o->delivery
                 ? $this->translateStatus($o->delivery->delivery_status, $locale)
                 : null,
@@ -80,6 +83,8 @@ class OrderController extends Controller
             'delivery_slot'           => $order->preferred_delivery_slot,
             'delivery_slot_label'     => $this->translateSlot($order->preferred_delivery_slot, $locale),
             'preferred_delivery_time' => $order->preferred_delivery_time?->toDateTimeString(),
+            'quantity'                => $order->totalQuantity(),
+            'total_quantity'          => $order->totalQuantity(),
             'subtotal'                => (float) $order->subtotal,
             'discount'                => (float) $order->discount,
             'delivery_charge'         => (float) $order->delivery_charge,
@@ -180,6 +185,8 @@ class OrderController extends Controller
             'order_no'           => $order->order_no,
             'order_status'       => $order->order_status,
             'order_status_label' => $this->translateStatus($order->order_status, $locale),
+            'quantity'           => (int) $data['quantity'],
+            'total_quantity'     => (int) $data['quantity'],
             'total_amount'       => (float) $order->total_amount,
             'order_date'         => $order->order_date?->toDateString(),
         ], 201);

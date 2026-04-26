@@ -21,6 +21,9 @@
     </div>
     <div style="text-align:right;">
         <div class="order-total">৳{{ number_format((float)$order->total_amount, 2) }}</div>
+        <div style="font-size:.78rem;color:#64748b;margin-top:.15rem;">
+            {{ $order->totalQuantity() }} jar(s)
+        </div>
         <a href="{{ route('dealer.orders.show', $order) }}" class="btn btn-outline btn-sm" style="margin-top:.5rem;">View</a>
     </div>
 </div>
