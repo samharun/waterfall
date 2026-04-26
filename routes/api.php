@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\Customer\DeviceTokenController;
 use App\Http\Controllers\Api\Customer\OrderController;
 use App\Http\Controllers\Api\Customer\ProductController;
 use App\Http\Controllers\Api\Customer\ProfileController;
+use App\Http\Controllers\Api\DeliveryAuthController;
+use App\Http\Controllers\Api\DeliveryManagerController;
+use App\Http\Controllers\Api\DeliveryStaffController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('customer')->group(function () {
@@ -35,3 +38,27 @@ Route::prefix('customer')->group(function () {
         Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
     });
 });
+
+Route::prefix('delivery')->group(function () {
+    Route::post('/login', [DeliveryAuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [DeliveryAuthController::class, 'logout']);
+        Route::get('/profile', [DeliveryAuthController::class, 'profile']);
+
+        Route::get('/dashboard', [DeliveryStaffController::class, 'dashboard']);
+        Route::get('/today', [DeliveryStaffController::class, 'todayDeliveries']);
+        Route::post('/update-status', [DeliveryStaffController::class, 'updateStatus']);
+        Route::post('/bulk-update', [DeliveryStaffController::class, 'bulkUpdate']);
+    });
+});
+
+Route::prefix('delivery-manager')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('/dashboard', [DeliveryManagerController::class, 'dashboard']);
+        Route::get('/staff-progress', [DeliveryManagerController::class, 'staffProgress']);
+        Route::get('/today-deliveries', [DeliveryManagerController::class, 'todayDeliveries']);
+        Route::post('/assign', [DeliveryManagerController::class, 'assign']);
+        Route::post('/reassign', [DeliveryManagerController::class, 'reassign']);
+    });

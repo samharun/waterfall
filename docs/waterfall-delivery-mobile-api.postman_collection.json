@@ -1,0 +1,258 @@
+{
+  "info": {
+    "name": "Waterfall Delivery Mobile API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://bdwaterfall.com/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Delivery Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/delivery/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mobile\": \"01700000001\",\n  \"password\": \"123456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delivery Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery/logout"
+      }
+    },
+    {
+      "name": "Delivery Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery/profile"
+      }
+    },
+    {
+      "name": "Delivery Staff Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery/dashboard"
+      }
+    },
+    {
+      "name": "Delivery Staff Today",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery/today"
+      }
+    },
+    {
+      "name": "Delivery Staff Update Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/delivery/update-status",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"delivery_id\": 1,\n  \"status\": \"delivered\",\n  \"delivered_jar_quantity\": 2,\n  \"empty_jar_return\": 2,\n  \"paid_amount\": 80,\n  \"remarks\": \"Delivered successfully\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delivery Staff Bulk Update",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/delivery/bulk-update",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"delivery_ids\": [1, 2, 3],\n  \"status\": \"delivered\",\n  \"remarks\": \"Delivered in route batch\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delivery Manager Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery-manager/dashboard"
+      }
+    },
+    {
+      "name": "Delivery Manager Staff Progress",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery-manager/staff-progress"
+      }
+    },
+    {
+      "name": "Delivery Manager Today Deliveries",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/delivery-manager/today-deliveries"
+      }
+    },
+    {
+      "name": "Delivery Manager Assign",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/delivery-manager/assign",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"delivery_id\": 1,\n  \"staff_id\": 3\n}"
+        }
+      }
+    },
+    {
+      "name": "Delivery Manager Reassign",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/delivery-manager/reassign",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"delivery_id\": 1,\n  \"staff_id\": 4\n}"
+        }
+      }
+    }
+  ]
+}

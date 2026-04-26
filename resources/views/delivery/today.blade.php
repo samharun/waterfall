@@ -9,7 +9,7 @@
 
 @php
     $active = $deliveries->whereIn('delivery_status', ['assigned','in_progress','pending']);
-    $done   = $deliveries->whereIn('delivery_status', ['delivered','failed','cancelled']);
+    $done   = $deliveries->whereIn('delivery_status', ['delivered','partial_delivered','not_delivered','customer_unavailable','failed','cancelled']);
 @endphp
 
 @if($active->isNotEmpty())

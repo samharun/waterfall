@@ -201,7 +201,13 @@ class Delivery extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereNotIn('delivery_status', ['cancelled', 'delivered']);
+        return $query->whereNotIn('delivery_status', [
+            'cancelled',
+            'delivered',
+            'partial_delivered',
+            'not_delivered',
+            'customer_unavailable',
+        ]);
     }
 
     // ── Status helpers ─────────────────────────────────────────────
@@ -256,6 +262,9 @@ class Delivery extends Model
             'assigned'    => 'Assigned',
             'in_progress' => 'In Progress',
             'delivered'   => 'Delivered',
+            'partial_delivered' => 'Partial Delivered',
+            'not_delivered' => 'Not Delivered',
+            'customer_unavailable' => 'Customer Unavailable',
             'failed'      => 'Failed',
             'cancelled'   => 'Cancelled',
         ];
