@@ -86,9 +86,13 @@ class DeliveryAuthController extends Controller
 
     private function userPayload(User $user): array
     {
+        // Get primary zone (for backward compatibility)
         $zone = $user->role === 'delivery_manager'
             ? $user->managedZones()->orderBy('name')->first()
             : $user->assignedDeliveries()->with('zone')->latest('assigned_at')->first()?->zone;
+
+        // Get all zones array
+        $zones = $user->getAllZones();
 
         return [
             'id' => $user->id,
@@ -97,6 +101,7 @@ class DeliveryAuthController extends Controller
             'role' => $user->role,
             'zone_name' => $zone?->name,
             'line_name' => null,
+            'zones' => $zones, // Add zones array for multiple zone support
         ];
     }
 

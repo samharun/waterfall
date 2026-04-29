@@ -123,6 +123,47 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Zone::class, 'delivery_manager_id');
     }
 
+    /**
+     * Many-to-many relationship: User can be assigned to multiple zones
+     * This is used for delivery managers who manage multiple zones
+     */
+    public function zones(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Zone::class, 'user_zone')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all zones for this user (for API response)
+     * Returns array of zone names
+     */
+    public function getAllZones(): array
+    {
+        // For delivery managers, get zones from many-to-many relationship
+        if ($this->role === 'delivery_manager') {
+            $zones = $this->zones()->pluck('name')->toArray();
+            
+            // Fallback to managedZones if no zones assigned via pivot table
+            if (empty($zones)) {
+                $zones = $this->managedZones()->pluck('name')->toArray();
+            }
+            
+            return $zones;
+        }
+        
+        // For delivery staff, get zone from their latest delivery
+        if ($this->role === 'delivery_staff') {
+            $zone = $this->assignedDeliveries()
+                ->with('zone')
+                ->latest('assigned_at')
+                ->first()?->zone;
+            
+            return $zone ? [$zone->name] : [];
+        }
+        
+        return [];
+    }
+
     public function orderedOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'ordered_by');
