@@ -33,7 +33,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
@@ -63,14 +63,14 @@ class User extends Authenticatable implements FilamentUser
     // ── Role helpers ───────────────────────────────────────────────
 
     public const ROLES = [
-        'super_admin'      => 'Super Admin',
-        'admin'            => 'Admin',
+        'super_admin' => 'Super Admin',
+        'admin' => 'Admin',
         'delivery_manager' => 'Delivery Manager',
-        'billing_officer'  => 'Billing Officer',
-        'stock_manager'    => 'Stock Manager',
-        'customer'         => 'Customer',
-        'dealer'           => 'Dealer',
-        'delivery_staff'   => 'Delivery Staff',
+        'billing_officer' => 'Billing Officer',
+        'stock_manager' => 'Stock Manager',
+        'customer' => 'Customer',
+        'dealer' => 'Dealer',
+        'delivery_staff' => 'Delivery Staff',
     ];
 
     public const BACK_OFFICE_ROLES = [
@@ -131,6 +131,11 @@ class User extends Authenticatable implements FilamentUser
     public function assignedDeliveries(): HasMany
     {
         return $this->hasMany(Delivery::class, 'delivery_staff_id');
+    }
+
+    public function fcmTokens(): HasMany
+    {
+        return $this->hasMany(UserFcmToken::class);
     }
 
     public function deliveryAssignmentsMade(): HasMany

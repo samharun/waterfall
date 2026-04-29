@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\Delivery;
 use App\Models\Payment;
 use App\Models\User;
@@ -57,7 +58,7 @@ class DeliveryManagerController extends Controller
             ->with(['assignedDeliveries' => fn ($query) => $query
                 ->whereIn('zone_id', $zoneIds)
                 ->where(fn (Builder $dateQuery) => $this->applyTodayFilter($dateQuery))
-                ->with(['zone', 'order.items', 'payments'])
+                ->with(['zone', 'order.items', 'payments']),
             ])
             ->get()
             ->map(function (User $user): array {
@@ -103,15 +104,25 @@ class DeliveryManagerController extends Controller
 
     public function assign(Request $request): JsonResponse
     {
-        return $this->assignDelivery($request, 'Delivery assigned successfully.');
+        return $this->assignDelivery(
+            $request,
+            'Delivery assigned successfully.',
+            'New Delivery Assigned',
+            'delivery_assigned',
+        );
     }
 
     public function reassign(Request $request): JsonResponse
     {
-        return $this->assignDelivery($request, 'Delivery reassigned successfully.');
+        return $this->assignDelivery(
+            $request,
+            'Delivery reassigned successfully.',
+            'Delivery Reassigned',
+            'delivery_reassigned',
+        );
     }
 
-    private function assignDelivery(Request $request, string $message): JsonResponse
+    private function assignDelivery(Request $request, string $message, string $notificationTitle, string $notificationType): JsonResponse
     {
         if (! $this->isDeliveryManager($request->user())) {
             return $this->forbiddenResponse();
@@ -150,14 +161,44 @@ class DeliveryManagerController extends Controller
             });
         } catch (\Throwable $e) {
             Log::error('Delivery assignment failed.', ['delivery_id' => $delivery->id, 'error' => $e->getMessage()]);
+
             return $this->errorResponse('Server error. Please try again later.', 500);
         }
 
         $delivery->refresh()->load($this->deliveryRelations());
+        $this->notifyAssignedStaff($delivery, $staff, $notificationTitle, $notificationType);
 
         return $this->successResponse($message, [
             'delivery' => $this->deliveryPayload($delivery),
         ]);
+    }
+
+    private function notifyAssignedStaff(Delivery $delivery, User $staff, string $title, string $type): void
+    {
+        try {
+            $orderNo = (string) ($delivery->order?->order_no ?? ('#'.$delivery->order_id));
+            $body = $type === 'delivery_reassigned'
+                ? sprintf('Order %s has been reassigned to you.', $orderNo)
+                : sprintf('Order %s has been assigned to you.', $orderNo);
+
+            SendFirebaseNotificationJob::dispatch(
+                [$staff->id],
+                $title,
+                $body,
+                [
+                    'type' => $type,
+                    'delivery_id' => (string) $delivery->id,
+                    'order_no' => $orderNo,
+                    'screen' => 'today_deliveries',
+                ],
+            )->afterCommit();
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to queue delivery assignment push notification.', [
+                'delivery_id' => $delivery->id,
+                'staff_id' => $staff->id,
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function todayDeliveriesQuery(User $manager): Builder

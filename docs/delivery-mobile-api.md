@@ -105,6 +105,139 @@ Response:
 
 `POST /delivery/logout`
 
+Optional body to remove only the current device token while logging out:
+
+```json
+{
+  "fcm_token": "sample-token"
+}
+```
+
+## Push Notifications
+
+Firebase Cloud Messaging uses the HTTP v1 API on the backend. The server needs a Firebase service-account JSON file, not the mobile `google-services.json` file.
+
+Required environment variables:
+
+```env
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_CREDENTIALS=app/firebase/firebase-service-account.json
+```
+
+Store the service-account file outside public web access, for example:
+
+```text
+storage/app/firebase/firebase-service-account.json
+```
+
+The JSON credential file is ignored by git and must not be committed.
+
+### Save FCM Token
+
+`POST /delivery/save-fcm-token`
+
+```http
+Authorization: Bearer TOKEN
+Accept: application/json
+```
+
+```json
+{
+  "fcm_token": "sample-token",
+  "platform": "android",
+  "device_name": "optional device name"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "FCM token saved successfully."
+}
+```
+
+### Delete FCM Token
+
+`POST /delivery/delete-fcm-token`
+
+Delete one token:
+
+```json
+{
+  "fcm_token": "sample-token"
+}
+```
+
+Delete all tokens for the authenticated delivery user:
+
+```json
+{}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "FCM token deleted successfully."
+}
+```
+
+### Notification Payloads
+
+Delivery assigned:
+
+```json
+{
+  "notification": {
+    "title": "New Delivery Assigned",
+    "body": "Order WF-ORD-000001 has been assigned to you."
+  },
+  "data": {
+    "type": "delivery_assigned",
+    "delivery_id": "1",
+    "order_no": "WF-ORD-000001",
+    "screen": "today_deliveries"
+  }
+}
+```
+
+Delivery reassigned:
+
+```json
+{
+  "notification": {
+    "title": "Delivery Reassigned",
+    "body": "Order WF-ORD-000001 has been reassigned to you."
+  },
+  "data": {
+    "type": "delivery_reassigned",
+    "delivery_id": "1",
+    "order_no": "WF-ORD-000001",
+    "screen": "today_deliveries"
+  }
+}
+```
+
+Delivery status updated:
+
+```json
+{
+  "notification": {
+    "title": "Delivery Status Updated",
+    "body": "Order WF-ORD-000001 is now Delivered."
+  },
+  "data": {
+    "type": "delivery_status_updated",
+    "delivery_id": "1",
+    "order_no": "WF-ORD-000001",
+    "screen": "manager_today_deliveries"
+  }
+}
+```
+
 ## Delivery Staff
 
 ### Dashboard
@@ -225,3 +358,5 @@ Response data:
 - Zone scoping uses `zones.delivery_manager_id`.
 - No line/route table exists in the current database, so `line_name` is returned as `null`.
 - No delivery-level columns exist for delivered jar quantity or empty jar returns. Jar quantity is computed from `order_items.quantity`; empty jar returns are written to `jar_deposits` when a jar product is available.
+- Delivery user FCM tokens are stored in `user_fcm_tokens` and scoped to the authenticated `users` row.
+- Delivery assignment pushes are sent only to the assigned staff user. Delivery status update pushes are sent to the zone's `delivery_manager_id` user when present.

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Customer\ProductController;
 use App\Http\Controllers\Api\Customer\ProfileController;
 use App\Http\Controllers\Api\DeliveryAuthController;
 use App\Http\Controllers\Api\DeliveryManagerController;
+use App\Http\Controllers\Api\DeliveryNotificationController;
 use App\Http\Controllers\Api\DeliveryStaffController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,8 @@ Route::prefix('delivery')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [DeliveryAuthController::class, 'logout']);
         Route::get('/profile', [DeliveryAuthController::class, 'profile']);
+        Route::post('/save-fcm-token', [DeliveryNotificationController::class, 'saveFcmToken']);
+        Route::post('/delete-fcm-token', [DeliveryNotificationController::class, 'deleteFcmToken']);
 
         Route::get('/dashboard', [DeliveryStaffController::class, 'dashboard']);
         Route::get('/today', [DeliveryStaffController::class, 'todayDeliveries']);

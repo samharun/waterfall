@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\Delivery;
 use App\Models\JarDeposit;
 use App\Models\Payment;
@@ -113,10 +114,12 @@ class DeliveryStaffController extends Controller
             });
         } catch (\Throwable $e) {
             Log::error('Delivery staff status update failed.', ['delivery_id' => $delivery->id, 'error' => $e->getMessage()]);
+
             return $this->errorResponse('Server error. Please try again later.', 500);
         }
 
         $delivery->refresh()->load($this->deliveryRelations());
+        $this->notifyManagerStatusUpdated($delivery, $data['status']);
 
         return $this->successResponse('Delivery status updated successfully.', [
             'delivery' => $this->deliveryPayload($delivery),
@@ -161,6 +164,7 @@ class DeliveryStaffController extends Controller
             });
         } catch (\Throwable $e) {
             Log::error('Delivery staff bulk update failed.', ['error' => $e->getMessage()]);
+
             return $this->errorResponse('Server error. Please try again later.', 500);
         }
 
@@ -328,6 +332,37 @@ class DeliveryStaffController extends Controller
             'remarks' => $remarks,
             'created_by' => $staffId,
         ]);
+    }
+
+    private function notifyManagerStatusUpdated(Delivery $delivery, string $status): void
+    {
+        try {
+            $manager = $delivery->zone?->deliveryManager;
+
+            if (! $manager || $manager->role !== 'delivery_manager') {
+                return;
+            }
+
+            $orderNo = (string) ($delivery->order?->order_no ?? ('#'.$delivery->order_id));
+            $statusLabel = str($status)->replace('_', ' ')->title()->toString();
+
+            SendFirebaseNotificationJob::dispatch(
+                [$manager->id],
+                'Delivery Status Updated',
+                sprintf('Order %s is now %s.', $orderNo, $statusLabel),
+                [
+                    'type' => 'delivery_status_updated',
+                    'delivery_id' => (string) $delivery->id,
+                    'order_no' => $orderNo,
+                    'screen' => 'manager_today_deliveries',
+                ],
+            )->afterCommit();
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to queue delivery status push notification.', [
+                'delivery_id' => $delivery->id,
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function isDeliveryStaff(mixed $user): bool

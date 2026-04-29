@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserFcmToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class DeliveryAuthController extends Controller
@@ -48,6 +50,22 @@ class DeliveryAuthController extends Controller
     {
         if (! $this->isDeliveryUser($request->user())) {
             return $this->forbiddenResponse();
+        }
+
+        try {
+            $fcmToken = $request->input('fcm_token');
+
+            if (is_string($fcmToken) && $fcmToken !== '') {
+                UserFcmToken::query()
+                    ->where('user_id', $request->user()->id)
+                    ->where('token_hash', UserFcmToken::hashToken($fcmToken))
+                    ->delete();
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Delivery logout FCM token cleanup failed.', [
+                'user_id' => $request->user()?->id,
+                'message' => $exception->getMessage(),
+            ]);
         }
 
         $request->user()?->currentAccessToken()?->delete();

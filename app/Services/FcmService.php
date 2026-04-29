@@ -56,7 +56,7 @@ class FcmService
                             'android' => [
                                 'priority' => 'high',
                                 'notification' => [
-                                    'channel_id' => 'order_status_updates',
+                                    'channel_id' => 'waterfall_delivery_channel',
                                 ],
                             ],
                             'apns' => [
