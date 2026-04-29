@@ -20,6 +20,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -262,6 +263,29 @@ class CustomerResource extends Resource
                     Actions\ViewAction::make(),
                     Actions\EditAction::make(),
 
+                    Actions\Action::make('view_qr')
+                        ->label('View QR')
+                        ->icon('heroicon-o-qr-code')
+                        ->color('info')
+                        ->visible(fn () => auth()->user()?->can('customers.view'))
+                        ->url(fn (Customer $record) => route('admin.customers.qr.show', $record))
+                        ->openUrlInNewTab(),
+
+                    Actions\Action::make('print_qr')
+                        ->label('Print QR')
+                        ->icon('heroicon-o-printer')
+                        ->color('gray')
+                        ->visible(fn () => auth()->user()?->can('customers.view'))
+                        ->url(fn (Customer $record) => route('admin.customers.qr.print', $record))
+                        ->openUrlInNewTab(),
+
+                    Actions\Action::make('download_qr')
+                        ->label('Download QR')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('gray')
+                        ->visible(fn () => auth()->user()?->can('customers.view'))
+                        ->url(fn (Customer $record) => route('admin.customers.qr.download', $record)),
+
                     Actions\Action::make('change_password')
                         ->label('Change Password')
                         ->icon('heroicon-o-key')
@@ -465,6 +489,16 @@ class CustomerResource extends Resource
                             $records->each(fn (Customer $record) => $record->update(['approval_status' => 'inactive']));
                             Notification::make()->title('Selected customers marked inactive')->send();
                         }),
+
+                    Actions\BulkAction::make('bulk_print_qr')
+                        ->label('Print QR Cards')
+                        ->icon('heroicon-o-qr-code')
+                        ->color('info')
+                        ->visible(fn () => auth()->user()?->can('customers.view'))
+                        ->url(fn (Collection $records) => route('admin.customers.qr.bulk-print', [
+                            'customer_ids' => $records->pluck('id')->all(),
+                        ]))
+                        ->openUrlInNewTab(),
 
                     Actions\DeleteBulkAction::make(),
                     Actions\RestoreBulkAction::make(),

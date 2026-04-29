@@ -60,6 +60,17 @@ class Customer extends Authenticatable
         return 'WF-CUS-'.str_pad($max + 1, 6, '0', STR_PAD_LEFT);
     }
 
+    public function qrValue(): string
+    {
+        if (filled($this->customer_id)) {
+            return $this->customer_id;
+        }
+
+        // TODO: If legacy customers without customer_id exist, backfill them through
+        // the existing customer ID generation rule. For QR display, keep a stable fallback.
+        return 'WF-CUS-'.str_pad((string) $this->getKey(), 6, '0', STR_PAD_LEFT);
+    }
+
     // ── Relationships ──────────────────────────────────────────────
 
     public function user(): BelongsTo

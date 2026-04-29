@@ -9,6 +9,7 @@ use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\RegisterController;
 use App\Http\Controllers\Customer\SubscriptionController;
+use App\Http\Controllers\Admin\CustomerQrController;
 use App\Http\Controllers\Admin\InvoicePrintController;
 use App\Http\Controllers\Admin\PaymentReceiptPrintController;
 use App\Http\Controllers\Dealer\AuthController as DealerAuthController;
@@ -44,6 +45,17 @@ Route::middleware(['auth', 'back.office'])->group(function () {
         ->name('admin.invoices.print');
     Route::get('/admin/payments/{payment}/print', [PaymentReceiptPrintController::class, 'print'])
         ->name('admin.payments.print');
+
+    Route::prefix('/admin/customers')->name('admin.customers.')->group(function () {
+        Route::get('/qr/bulk-print', [CustomerQrController::class, 'bulkPrint'])
+            ->name('qr.bulk-print');
+        Route::get('/{customer}/qr', [CustomerQrController::class, 'show'])
+            ->name('qr.show');
+        Route::get('/{customer}/qr/download', [CustomerQrController::class, 'download'])
+            ->name('qr.download');
+        Route::get('/{customer}/qr/print', [CustomerQrController::class, 'print'])
+            ->name('qr.print');
+    });
 });
 
 // ── Customer Auth (guest) ──────────────────────────────────────────
