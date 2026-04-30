@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * RolePermissionSeeder
@@ -16,9 +17,15 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ensure admin user has admin role
-        User::where('email', 'admin@waterfall.com')
-            ->update(['role' => 'admin']);
+        // Ensure the default back-office admin exists after a fresh local reset.
+        User::updateOrCreate(
+            ['email' => 'admin@waterfall.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin123'),
+                'role' => 'admin',
+            ],
+        );
 
         // Ensure delivery staff has correct role
         User::where('email', 'staff@waterfall.com')
