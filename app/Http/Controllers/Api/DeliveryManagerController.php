@@ -122,6 +122,110 @@ class DeliveryManagerController extends Controller
         );
     }
 
+    /**
+     * GET /delivery-manager/pending-orders
+     * Returns orders in 'pending' status for zones managed by this manager.
+     */
+    public function pendingOrders(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryManager($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $zoneIds = $this->managedZoneIds($request->user());
+
+        $orders = \App\Models\Order::with(['customer.zone', 'dealer.zone', 'items.product'])
+            ->where('order_status', 'pending')
+            ->whereIn('zone_id', $zoneIds)
+            ->orderBy('order_date', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn (\App\Models\Order $order) => $this->orderPayload($order))
+            ->values()
+            ->all();
+
+        return $this->successResponse('Pending orders loaded successfully.', $orders);
+    }
+
+    /**
+     * POST /delivery-manager/confirm-order
+     * Confirms a pending order → auto-creates a delivery record.
+     */
+    public function confirmOrder(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryManager($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'order_id' => ['required', 'integer', 'exists:orders,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $order = \App\Models\Order::with(['customer', 'dealer'])->find($validator->validated()['order_id']);
+
+        // Ensure order belongs to a zone managed by this manager
+        $zoneIds = $this->managedZoneIds($request->user());
+        if (! in_array((int) $order->zone_id, $zoneIds, true)) {
+            return $this->forbiddenResponse();
+        }
+
+        if ($order->order_status !== 'pending') {
+            return $this->errorResponse(
+                "Order cannot be confirmed. Current status: {$order->order_status}.",
+                422
+            );
+        }
+
+        try {
+            DB::transaction(function () use ($order): void {
+                $order->markConfirmed(); // triggers auto-delivery creation via booted()
+            });
+        } catch (\Throwable $e) {
+            Log::error('Order confirmation failed.', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            return $this->errorResponse('Server error. Please try again later.', 500);
+        }
+
+        $order->refresh()->load(['customer', 'dealer', 'items.product', 'deliveries']);
+
+        return $this->successResponse('Order confirmed successfully. Delivery created.', [
+            'order' => $this->orderPayload($order),
+        ]);
+    }
+
+    private function orderPayload(\App\Models\Order $order): array
+    {
+        $party = $order->order_type === 'dealer' ? $order->dealer : $order->customer;
+        $partyCode = $order->order_type === 'dealer' ? $party?->dealer_code : $party?->customer_id;
+
+        return [
+            'id'             => $order->id,
+            'order_no'       => $order->order_no,
+            'order_type'     => $order->order_type,
+            'order_status'   => $order->order_status,
+            'customer_id'    => $partyCode,
+            'customer_name'  => $party?->name,
+            'mobile'         => $party?->mobile,
+            'address'        => $party?->address,
+            'zone_name'      => $order->zone?->name ?? $party?->zone?->name,
+            'order_date'     => $order->order_date?->toDateString(),
+            'delivery_slot'  => $order->preferred_delivery_slot,
+            'total_amount'   => (float) $order->total_amount,
+            'payment_status' => $order->payment_status,
+            'jar_quantity'   => $order->totalQuantity(),
+            'remarks'        => $order->remarks,
+            'items'          => $order->items->map(fn ($item) => [
+                'product_name' => $item->product?->name,
+                'quantity'     => $item->quantity,
+                'unit_price'   => (float) $item->unit_price,
+                'line_total'   => (float) $item->line_total,
+            ])->all(),
+        ];
+    }
+
     private function assignDelivery(Request $request, string $message, string $notificationTitle, string $notificationType): JsonResponse
     {
         if (! $this->isDeliveryManager($request->user())) {
