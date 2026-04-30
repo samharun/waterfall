@@ -4,122 +4,106 @@
     $totalActive   = $products->where('status', 'active')->count();
     $lowStockCount = $products->filter(fn ($p) => $p->isLowStock())->count();
     $totalStock    = $products->where('status', 'active')->sum('current_stock');
-
-    $typeColors = [
-        'jar'       => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-        'bottle'    => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-        'accessory' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    ];
+    $typeColors    = ['jar'=>'#2563eb','bottle'=>'#16a34a','accessory'=>'#f59e0b'];
 @endphp
 
 {{-- Filter Bar --}}
-<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm p-4 mb-5">
-    <div class="flex flex-wrap items-end gap-3">
-        <div class="flex-1 min-w-[130px]">
-            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Product Type</label>
-            <select wire:model.live="product_type"
-                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500">
-                <option value="">All Types</option>
-                @foreach(\App\Models\Product::typeLabels() as $k => $v)
-                    <option value="{{ $k }}">{{ $v }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex-1 min-w-[130px]">
-            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Status</label>
-            <select wire:model.live="status"
-                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500">
-                <option value="">All</option>
-                @foreach(\App\Models\Product::statusLabels() as $k => $v)
-                    <option value="{{ $k }}">{{ $v }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex items-center gap-2 pb-2">
-            <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
-                <input type="checkbox" wire:model.live="low_stock_only"
-                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                <span>Low stock only</span>
-            </label>
-        </div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px">
+    <div style="flex:1;min-width:130px">
+        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Product Type</label>
+        <select wire:model.live="product_type" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;color:#111827;background:#f9fafb;outline:none">
+            <option value="">All Types</option>
+            @foreach(\App\Models\Product::typeLabels() as $k => $v)
+                <option value="{{ $k }}">{{ $v }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div style="flex:1;min-width:130px">
+        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Status</label>
+        <select wire:model.live="status" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;color:#111827;background:#f9fafb;outline:none">
+            <option value="">All</option>
+            @foreach(\App\Models\Product::statusLabels() as $k => $v)
+                <option value="{{ $k }}">{{ $v }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding-bottom:2px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer">
+            <input type="checkbox" wire:model.live="low_stock_only" style="width:14px;height:14px;cursor:pointer">
+            Low stock only
+        </label>
     </div>
 </div>
 
 {{-- KPI Cards --}}
-<div class="grid grid-cols-3 gap-4 mb-5">
-    <div class="rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 p-4 text-white shadow-sm text-center">
-        <div class="text-2xl font-bold">{{ $totalActive }}</div>
-        <div class="text-xs opacity-80 mt-1 font-medium uppercase tracking-wide">Active Products</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+    <div style="background:linear-gradient(135deg,#0077B6,#0369a1);border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+        <div style="font-size:28px;font-weight:800;color:#fff">{{ $totalActive }}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Active Products</div>
     </div>
-    <div class="rounded-xl {{ $lowStockCount > 0 ? 'bg-gradient-to-br from-danger-500 to-danger-600' : 'bg-gradient-to-br from-success-500 to-success-600' }} p-4 text-white shadow-sm text-center">
-        <div class="text-2xl font-bold">{{ $lowStockCount }}</div>
-        <div class="text-xs opacity-80 mt-1 font-medium uppercase tracking-wide">{{ $lowStockCount > 0 ? '⚠ Low Stock' : '✓ Low Stock' }}</div>
+    <div style="background:{{ $lowStockCount > 0 ? 'linear-gradient(135deg,#dc2626,#b91c1c)' : 'linear-gradient(135deg,#16a34a,#15803d)' }};border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+        <div style="font-size:28px;font-weight:800;color:#fff">{{ $lowStockCount }}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">{{ $lowStockCount > 0 ? '⚠ Low Stock' : '✓ All OK' }}</div>
     </div>
-    <div class="rounded-xl bg-gradient-to-br from-info-500 to-info-600 p-4 text-white shadow-sm text-center">
-        <div class="text-2xl font-bold">{{ number_format($totalStock) }}</div>
-        <div class="text-xs opacity-80 mt-1 font-medium uppercase tracking-wide">Total Stock Qty</div>
+    <div style="background:linear-gradient(135deg,#0284c7,#0369a1);border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+        <div style="font-size:28px;font-weight:800;color:#fff">{{ number_format($totalStock) }}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Total Stock Qty</div>
     </div>
 </div>
 
 {{-- Table --}}
-<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
-    <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
-        <h3 class="font-semibold text-gray-800 dark:text-gray-200">Product Stock</h3>
-        <span class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-full font-medium">{{ $products->count() }} products</span>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f3f4f6;background:#f9fafb">
+        <span style="font-size:14px;font-weight:600;color:#111827">Product Stock</span>
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:9999px;background:#f3f4f6;color:#6b7280">{{ $products->count() }} products</span>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+    <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
             <thead>
-                <tr class="bg-gray-50 dark:bg-gray-800/50 text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    <th class="px-4 py-3 text-left font-semibold">SKU</th>
-                    <th class="px-4 py-3 text-left font-semibold">Product Name</th>
-                    <th class="px-4 py-3 text-left font-semibold">Type</th>
-                    <th class="px-4 py-3 text-right font-semibold">Current Stock</th>
-                    <th class="px-4 py-3 text-right font-semibold">Alert Qty</th>
-                    <th class="px-4 py-3 text-left font-semibold">Status</th>
-                    <th class="px-4 py-3 text-center font-semibold">Stock Level</th>
+                <tr style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">SKU</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Product Name</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Type</th>
+                    <th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Current Stock</th>
+                    <th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Alert Qty</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Status</th>
+                    <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Stock Level</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody>
                 @forelse($products as $p)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors {{ $p->isLowStock() ? 'bg-danger-50/50 dark:bg-danger-900/10' : '' }}">
-                        <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $p->sku }}</td>
-                        <td class="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">{{ $p->name }}</td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $typeColors[$p->product_type] ?? 'bg-gray-100 text-gray-600' }}">
+                    <tr style="border-bottom:1px solid #f9fafb;{{ $p->isLowStock() ? 'background:#fff5f5' : '' }}">
+                        <td style="padding:10px 16px;font-family:monospace;font-size:11px;color:#6b7280">{{ $p->sku }}</td>
+                        <td style="padding:10px 16px;font-weight:600;color:#111827">{{ $p->name }}</td>
+                        <td style="padding:10px 16px">
+                            @php $tc = $typeColors[$p->product_type] ?? '#6b7280'; @endphp
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151">
+                                <span style="width:6px;height:6px;border-radius:50%;background:{{ $tc }};display:inline-block"></span>
                                 {{ ucfirst($p->product_type) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-right">
-                            <span class="font-bold text-lg {{ $p->isLowStock() ? 'text-danger-600 dark:text-danger-400' : 'text-gray-800 dark:text-gray-200' }}">
-                                {{ $p->current_stock }}
-                            </span>
+                        <td style="padding:10px 16px;text-align:right">
+                            <span style="font-size:18px;font-weight:800;{{ $p->isLowStock() ? 'color:#b91c1c' : 'color:#111827' }}">{{ $p->current_stock }}</span>
                         </td>
-                        <td class="px-4 py-3 text-right text-gray-500">{{ $p->stock_alert_qty }}</td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $p->status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500' }}">
+                        <td style="padding:10px 16px;text-align:right;color:#9ca3af">{{ $p->stock_alert_qty }}</td>
+                        <td style="padding:10px 16px">
+                            <span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;{{ $p->status === 'active' ? 'background:#dcfce7;color:#15803d' : 'background:#f3f4f6;color:#9ca3af' }}">
                                 {{ ucfirst($p->status) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-center">
+                        <td style="padding:10px 16px;text-align:center">
                             @if($p->isLowStock())
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-danger-100 text-danger-700 dark:bg-danger-900/30 dark:text-danger-400">
-                                    ⚠ Low Stock
-                                </span>
+                                <span style="display:inline-block;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:700;background:#fee2e2;color:#b91c1c">⚠ Low Stock</span>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400">
-                                    ✓ OK
-                                </span>
+                                <span style="display:inline-block;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:600;background:#dcfce7;color:#15803d">✓ OK</span>
                             @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center">
-                            <div class="text-gray-400 dark:text-gray-600">
-                                <svg class="mx-auto h-10 w-10 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                <p class="text-sm font-medium">No products found</p>
-                            </div>
+                        <td colspan="7" style="padding:48px 16px;text-align:center;color:#9ca3af">
+                            <svg style="width:40px;height:40px;margin:0 auto 12px;opacity:.4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <p style="font-size:13px;font-weight:500">No products found</p>
                         </td>
                     </tr>
                 @endforelse
