@@ -2,11 +2,15 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Admin\Widgets\DailyOrdersChartWidget;
-use App\Filament\Admin\Widgets\MonthlyRevenueChartWidget;
-use App\Filament\Admin\Widgets\OperationsStatsWidget;
-use App\Filament\Admin\Widgets\OverviewStatsWidget;
-use Filament\Http\Middleware\Authenticate;
+use App\Filament\Admin\Widgets\DeliveryCompletionChartWidget;
+use App\Filament\Admin\Widgets\DeliveryStaffActivityWidget;
+use App\Filament\Admin\Widgets\JarDepositTrackerWidget;
+use App\Filament\Admin\Widgets\PendingApprovalsWidget;
+use App\Filament\Admin\Widgets\RecentActivityWidget;
+use App\Filament\Admin\Widgets\TodayCollectionSummaryWidget;
+use App\Filament\Admin\Widgets\TodayDeliveryStatusWidget;
+use App\Filament\Admin\Widgets\UnassignedDeliveriesWidget;
+use App\Filament\Admin\Widgets\ZoneDeliverySummaryWidget;use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -17,7 +21,6 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -90,11 +93,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([
-                AccountWidget::class,
-                OverviewStatsWidget::class,
-                OperationsStatsWidget::class,
-                DailyOrdersChartWidget::class,
-                MonthlyRevenueChartWidget::class,
+                TodayDeliveryStatusWidget::class,
+                DeliveryStaffActivityWidget::class,
+                ZoneDeliverySummaryWidget::class,
+                PendingApprovalsWidget::class,
+                TodayCollectionSummaryWidget::class,
+                UnassignedDeliveriesWidget::class,
+                JarDepositTrackerWidget::class,
+                RecentActivityWidget::class,
+                DeliveryCompletionChartWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

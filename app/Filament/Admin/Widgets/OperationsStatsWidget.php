@@ -13,6 +13,8 @@ class OperationsStatsWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 2;
 
+    protected static bool $isDiscovered = false;
+
     public static function canView(): bool
     {
         return auth()->user()?->can('reports.dashboard.view') ?? false;

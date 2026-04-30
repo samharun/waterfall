@@ -8,7 +8,9 @@ use Illuminate\Support\Carbon;
 
 class MonthlyRevenueChartWidget extends ChartWidget
 {
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 7;
+
+    protected static bool $isDiscovered = false;
 
     public static function canView(): bool
     {

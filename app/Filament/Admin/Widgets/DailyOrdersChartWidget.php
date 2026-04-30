@@ -8,7 +8,9 @@ use Illuminate\Support\Carbon;
 
 class DailyOrdersChartWidget extends ChartWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 6;
+
+    protected static bool $isDiscovered = false;
 
     public static function canView(): bool
     {

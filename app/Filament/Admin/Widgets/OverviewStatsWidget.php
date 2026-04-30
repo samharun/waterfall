@@ -14,6 +14,8 @@ class OverviewStatsWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 1;
 
+    protected static bool $isDiscovered = false;
+
     public static function canView(): bool
     {
         return auth()->user()?->can('reports.dashboard.view') ?? false;
