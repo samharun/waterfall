@@ -35,7 +35,7 @@ class DealerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Dealer / Distributor';
+    protected static string|\UnitEnum|null $navigationGroup = 'Dealers';
 
     protected static ?string $navigationLabel = 'Dealers';
 
@@ -329,3 +329,4 @@ class DealerResource extends Resource
         ]);
     }
 }
+

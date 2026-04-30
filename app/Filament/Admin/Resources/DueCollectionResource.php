@@ -37,7 +37,7 @@ class DueCollectionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-down-tray';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Billing & Payment';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Due Collections';
 
@@ -411,3 +411,4 @@ class DueCollectionResource extends Resource
         ];
     }
 }
+

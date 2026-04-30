@@ -36,7 +36,7 @@ class PaymentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Billing & Payment';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Payments';
 
@@ -337,3 +337,4 @@ class PaymentResource extends Resource
         ]);
     }
 }
+

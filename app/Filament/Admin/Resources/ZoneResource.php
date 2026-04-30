@@ -30,7 +30,7 @@ class ZoneResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Customer Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Customers';
 
     protected static ?string $navigationLabel = 'Zones / Lines';
 
@@ -169,3 +169,4 @@ class ZoneResource extends Resource
         ]);
     }
 }
+

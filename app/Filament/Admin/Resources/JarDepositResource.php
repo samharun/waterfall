@@ -35,7 +35,7 @@ class JarDepositResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Inventory';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Jar Deposit Tracking';
 
@@ -281,3 +281,4 @@ class JarDepositResource extends Resource
         ]);
     }
 }
+

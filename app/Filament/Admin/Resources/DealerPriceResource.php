@@ -31,7 +31,7 @@ class DealerPriceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-bangladeshi';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Dealer / Distributor';
+    protected static string|\UnitEnum|null $navigationGroup = 'Dealers';
 
     protected static ?string $navigationLabel = 'Dealer Pricing';
 
@@ -210,3 +210,4 @@ class DealerPriceResource extends Resource
         ]);
     }
 }
+

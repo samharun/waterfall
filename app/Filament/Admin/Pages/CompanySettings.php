@@ -16,7 +16,7 @@ class CompanySettings extends Page
     protected static string $accessPermission = 'settings.company.manage';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Company Settings';
 
@@ -149,3 +149,4 @@ class CompanySettings extends Page
         Notification::make()->title('Company settings saved')->success()->send();
     }
 }
+

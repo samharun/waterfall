@@ -35,7 +35,7 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Inventory';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Products';
 
@@ -265,3 +265,4 @@ class ProductResource extends Resource
         ]);
     }
 }
+

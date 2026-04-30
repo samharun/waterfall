@@ -38,7 +38,7 @@ class CustomerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Customer Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Customers';
 
     protected static ?string $navigationLabel = 'Customers';
 
@@ -549,3 +549,4 @@ class CustomerResource extends Resource
         return sprintf('%s+customer%s@%s', $localPart, $record->id, $domain);
     }
 }
+

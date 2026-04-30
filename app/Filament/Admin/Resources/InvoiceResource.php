@@ -37,7 +37,7 @@ class InvoiceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Billing & Payment';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Invoices';
 
@@ -440,3 +440,4 @@ class InvoiceResource extends Resource
         ]);
     }
 }
+

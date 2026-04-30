@@ -16,7 +16,7 @@ class SmsOtpSettings extends Page
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'SMS / OTP Settings';
 
@@ -153,3 +153,4 @@ class SmsOtpSettings extends Page
         }
     }
 }
+

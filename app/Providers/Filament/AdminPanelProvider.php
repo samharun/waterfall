@@ -39,9 +39,66 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->path('admin')
             ->login(Login::class)
+            ->topNavigation()
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): HtmlString => new HtmlString(<<<'HTML'
+                <style>
+                /* ── Top navigation bar ──────────────────────────────────── */
+                .fi-topbar {
+                    border-bottom: 1px solid #e5e7eb !important;
+                    background: #fff !important;
+                    box-shadow: 0 1px 4px rgba(0,0,0,.06) !important;
+                }
+
+                /* ── Top nav items ───────────────────────────────────────── */
+                .fi-topbar-nav-item-button {
+                    font-size: 13px !important;
+                    font-weight: 500 !important;
+                    color: #374151 !important;
+                    padding: 6px 10px !important;
+                    border-radius: 8px !important;
+                    transition: background .15s, color .15s !important;
+                }
+
+                .fi-topbar-nav-item-button:hover {
+                    background: #f3f4f6 !important;
+                    color: #111827 !important;
+                }
+
+                /* Active top nav item */
+                .fi-topbar-nav-item-button.fi-active,
+                .fi-topbar-nav-item-button[aria-current="page"] {
+                    background: #fef3c7 !important;
+                    color: #92400e !important;
+                    font-weight: 600 !important;
+                }
+
+                /* ── Dropdown groups ─────────────────────────────────────── */
+                .fi-dropdown-list-item-label {
+                    font-size: 13px !important;
+                    color: #374151 !important;
+                }
+
+                .fi-dropdown-list-item:hover .fi-dropdown-list-item-label {
+                    color: #111827 !important;
+                }
+
+                /* ── Page heading ────────────────────────────────────────── */
+                .fi-page-header-heading {
+                    font-size: 20px !important;
+                    font-weight: 700 !important;
+                    color: #111827 !important;
+                }
+
+                /* ── Navigation badge ────────────────────────────────────── */
+                .fi-badge {
+                    font-size: 10px !important;
+                    font-weight: 700 !important;
+                }
+                </style>
+            HTML))
             ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): HtmlString => new HtmlString(<<<'HTML'
                 <script>
                     (() => {
@@ -81,12 +138,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->navigationGroups([
                 NavigationGroup::make('Order & Delivery'),
-                NavigationGroup::make('Customer Management'),
-                NavigationGroup::make('Dealer / Distributor'),
-                NavigationGroup::make('Billing & Payment'),
-                NavigationGroup::make('Inventory'),
+                NavigationGroup::make('Customers'),
+                NavigationGroup::make('Dealers'),
                 NavigationGroup::make('Reports'),
-                NavigationGroup::make('Settings'),
+                NavigationGroup::make('Administration'),
             ])
             ->pages([
                 Dashboard::class,

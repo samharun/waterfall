@@ -31,7 +31,7 @@ class CustomerPriceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Customer Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Customers';
 
     protected static ?string $navigationLabel = 'Customer Pricing';
 
@@ -210,3 +210,4 @@ class CustomerPriceResource extends Resource
         ]);
     }
 }
+

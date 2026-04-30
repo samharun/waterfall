@@ -34,7 +34,7 @@ class CustomerSubscriptionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Customer Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Customers';
 
     protected static ?string $navigationLabel = 'Subscriptions';
 
@@ -291,3 +291,4 @@ class CustomerSubscriptionResource extends Resource
         ]);
     }
 }
+

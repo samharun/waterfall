@@ -33,7 +33,7 @@ class StockTransactionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrows-up-down';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Inventory';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Stock Transactions';
 
@@ -222,3 +222,4 @@ class StockTransactionResource extends Resource
         ]);
     }
 }
+

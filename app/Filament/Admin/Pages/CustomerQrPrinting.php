@@ -16,7 +16,7 @@ class CustomerQrPrinting extends Page
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-qr-code';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Customer Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Customers';
 
     protected static ?string $navigationLabel = 'QR Code Printing';
 
@@ -97,3 +97,4 @@ class CustomerQrPrinting extends Page
         return count($this->selected_ids);
     }
 }
+
