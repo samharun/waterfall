@@ -3,34 +3,45 @@
 @php use App\Helpers\BnHelper as Bn; @endphp
 
 @section('content')
-<p class="page-title">{{ __('customer.my_payments') }}</p>
+<div class="page-header">
+    <h1 class="page-title">{{ __('customer.my_payments') }}</h1>
+</div>
 
 @forelse($payments as $pay)
-<div class="card" style="padding:.9rem 1rem;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-            <div style="font-family:monospace;font-size:.85rem;font-weight:600;">{{ $pay->payment_no }}</div>
-            <div style="font-size:.8rem;color:#64748b;margin-top:.2rem;">
-                {{ Bn::d($pay->payment_date) }} &bull; {{ ucfirst($pay->payment_method) }}
-            </div>
-            @if($pay->invoice)
-                <div style="font-size:.78rem;color:#94a3b8;margin-top:.15rem;">{{ __('customer.invoice_ref') }}: {{ $pay->invoice->invoice_no }}</div>
-            @endif
-            @if($pay->reference_no)
-                <div style="font-size:.78rem;color:#94a3b8;">{{ __('customer.ref') }}: {{ $pay->reference_no }}</div>
-            @endif
-            @if($pay->remarks)
-                <div style="font-size:.78rem;color:#94a3b8;">{{ $pay->remarks }}</div>
-            @endif
+<div class="order-card">
+    <div style="flex:1;min-width:0">
+        <div class="order-no">{{ $pay->payment_no }}</div>
+        <div style="font-size:12px;color:#64748b;margin:3px 0">
+            {{ Bn::d($pay->payment_date) }} &bull;
+            <span style="display:inline-flex;align-items:center;gap:3px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+                {{ ucfirst($pay->payment_method) }}
+            </span>
         </div>
-        <div style="font-size:1.15rem;font-weight:700;color:#10b981;">৳{{ Bn::m($pay->amount) }}</div>
+        @if($pay->invoice)
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px">{{ __('customer.invoice_ref') }}: <span style="font-family:monospace">{{ $pay->invoice->invoice_no }}</span></div>
+        @endif
+        @if($pay->reference_no)
+            <div style="font-size:11px;color:#94a3b8">{{ __('customer.ref') }}: {{ $pay->reference_no }}</div>
+        @endif
+        @if($pay->remarks)
+            <div style="font-size:11px;color:#94a3b8">{{ $pay->remarks }}</div>
+        @endif
     </div>
-    <div style="margin-top:.5rem;text-align:right;">
-        <a href="{{ route('customer.payments.print', $pay) }}" class="btn btn-outline btn-sm" target="_blank">{{ __('customer.print_receipt') }}</a>
+    <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:20px;font-weight:800;color:#16a34a">৳{{ Bn::m($pay->amount) }}</div>
+        <a href="{{ route('customer.payments.print', $pay) }}" class="btn btn-sm" style="background:#f3f4f6;color:#374151;margin-top:8px" target="_blank">
+            {{ __('customer.print_receipt') }}
+        </a>
     </div>
 </div>
 @empty
-<div class="card" style="text-align:center;color:#94a3b8;padding:2rem;">{{ __('customer.no_payments') }}</div>
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-state-icon">💳</div>
+        <div class="empty-state-title">{{ __('customer.no_payments') }}</div>
+    </div>
+</div>
 @endforelse
 
 <div class="pagination">{{ $payments->links() }}</div>
