@@ -49,6 +49,19 @@ class RolePermissions
 
         // Due Collections
         'due_collections.manage',
+
+        // Accounts
+        'accounts.dashboard.view',
+        'accounts.income.view', 'accounts.income.create', 'accounts.income.edit', 'accounts.income.delete',
+        'accounts.expense.view', 'accounts.expense.create', 'accounts.expense.edit', 'accounts.expense.delete',
+        'accounts.staff_salary.view', 'accounts.staff_salary.manage',
+        'accounts.jar_purchases.view', 'accounts.jar_purchases.manage',
+        'accounts.assets.view', 'accounts.assets.manage',
+        'accounts.maintenance.view', 'accounts.maintenance.manage',
+        'accounts.investors.view', 'accounts.investors.manage',
+        'accounts.suppliers.view', 'accounts.suppliers.manage',
+        'accounts.reports.view',
+        'accounts.settings.manage',
     ];
 
     public const ROLE_PERMISSIONS = [
@@ -80,6 +93,17 @@ class RolePermissions
             'reports.dashboard.view', 'reports.sales.view', 'reports.delivery.view',
             'reports.due.view', 'reports.stock.view', 'reports.customer_ledger.view',
             'due_collections.manage',
+            'accounts.dashboard.view',
+            'accounts.income.view', 'accounts.income.create', 'accounts.income.edit', 'accounts.income.delete',
+            'accounts.expense.view', 'accounts.expense.create', 'accounts.expense.edit', 'accounts.expense.delete',
+            'accounts.staff_salary.view', 'accounts.staff_salary.manage',
+            'accounts.jar_purchases.view', 'accounts.jar_purchases.manage',
+            'accounts.assets.view', 'accounts.assets.manage',
+            'accounts.maintenance.view', 'accounts.maintenance.manage',
+            'accounts.investors.view', 'accounts.investors.manage',
+            'accounts.suppliers.view', 'accounts.suppliers.manage',
+            'accounts.reports.view',
+            'accounts.settings.manage',
         ],
 
         'delivery_manager' => [
@@ -101,6 +125,11 @@ class RolePermissions
             'payments.print', 'collections.reconcile',
             'due_collections.manage',
             'reports.sales.view', 'reports.due.view', 'reports.customer_ledger.view',
+            'accounts.dashboard.view',
+            'accounts.income.view', 'accounts.income.create', 'accounts.income.edit',
+            'accounts.expense.view', 'accounts.expense.create', 'accounts.expense.edit',
+            'accounts.staff_salary.view', 'accounts.staff_salary.manage',
+            'accounts.reports.view',
         ],
 
         'stock_manager' => [

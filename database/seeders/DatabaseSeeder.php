@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolePermissionSeeder::class,  // Ensures correct role assignments
             AppSettingsSeeder::class,     // Default SMS/OTP/company/branding settings
+            AccountCategorySeeder::class,
+            PaymentAccountSeeder::class,
         ]);
 
         $this->command->info('');
