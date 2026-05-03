@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Delivery extends Model
 {
@@ -35,7 +37,7 @@ class Delivery extends Model
     {
         static::creating(function (Delivery $delivery) {
             if (empty($delivery->delivery_no)) {
-                $delivery->delivery_no = self::generateDeliveryNo();
+                $delivery->delivery_no = self::generateDeliveryNo($delivery->assigned_at);
             }
         });
 
@@ -114,10 +116,31 @@ class Delivery extends Model
         }
     }
 
-    public static function generateDeliveryNo(): string
+    public static function generateDeliveryNo(null|string|Carbon $date = null): string
     {
-        $max = self::withTrashed()->max('id') ?? 0;
-        return 'WF-DEL-' . str_pad($max + 1, 6, '0', STR_PAD_LEFT);
+        $sequenceDate = $date instanceof Carbon
+            ? $date->toDateString()
+            : Carbon::parse($date ?? today())->toDateString();
+
+        $nextNumber = DB::transaction(function () use ($sequenceDate): int {
+            DeliveryNumberSequence::query()->insertOrIgnore([
+                'sequence_date' => $sequenceDate,
+                'last_number' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $sequence = DeliveryNumberSequence::query()
+                ->whereDate('sequence_date', $sequenceDate)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $sequence->increment('last_number');
+
+            return $sequence->last_number;
+        });
+
+        return 'WF-DEL-' . Carbon::parse($sequenceDate)->format('ymd') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     // ── Relationships ──────────────────────────────────────────────

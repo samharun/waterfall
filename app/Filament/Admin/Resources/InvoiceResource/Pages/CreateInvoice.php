@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\InvoiceResource\Pages;
 
 use App\Filament\Admin\Resources\InvoiceResource;
-use App\Models\Invoice;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +12,6 @@ class CreateInvoice extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['invoice_no'] = Invoice::generateInvoiceNo();
         $data['created_by'] = Auth::id();
 
         // Clear irrelevant FK

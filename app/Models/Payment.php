@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Payment extends Model
 {
@@ -43,7 +45,7 @@ class Payment extends Model
     {
         static::creating(function (Payment $payment) {
             if (empty($payment->payment_no)) {
-                $payment->payment_no = self::generatePaymentNo();
+                $payment->payment_no = self::generatePaymentNo($payment->payment_date);
             }
         });
 
@@ -59,10 +61,31 @@ class Payment extends Model
         static::restored($sync);
     }
 
-    public static function generatePaymentNo(): string
+    public static function generatePaymentNo(null|string|Carbon $date = null): string
     {
-        $max = self::withTrashed()->max('id') ?? 0;
-        return 'WF-PAY-' . str_pad($max + 1, 6, '0', STR_PAD_LEFT);
+        $sequenceDate = $date instanceof Carbon
+            ? $date->toDateString()
+            : Carbon::parse($date ?? today())->toDateString();
+
+        $nextNumber = DB::transaction(function () use ($sequenceDate): int {
+            PaymentNumberSequence::query()->insertOrIgnore([
+                'sequence_date' => $sequenceDate,
+                'last_number' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $sequence = PaymentNumberSequence::query()
+                ->whereDate('sequence_date', $sequenceDate)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $sequence->increment('last_number');
+
+            return $sequence->last_number;
+        });
+
+        return 'WF-PAY-' . Carbon::parse($sequenceDate)->format('ymd') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     // ── Relationships ──────────────────────────────────────────────

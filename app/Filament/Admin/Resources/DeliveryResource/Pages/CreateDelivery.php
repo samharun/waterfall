@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\DeliveryResource\Pages;
 
 use App\Filament\Admin\Resources\DeliveryResource;
-use App\Models\Delivery;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,8 +12,6 @@ class CreateDelivery extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['delivery_no'] = Delivery::generateDeliveryNo();
-
         // If staff assigned, ensure assigned_by and assigned_at are set
         if (! empty($data['delivery_staff_id'])) {
             $data['assigned_by'] = $data['assigned_by'] ?? Auth::id();

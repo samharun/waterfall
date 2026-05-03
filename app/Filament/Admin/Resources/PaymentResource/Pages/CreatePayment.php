@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Resources\PaymentResource\Pages;
 
 use App\Filament\Admin\Resources\PaymentResource;
 use App\Models\Invoice;
-use App\Models\Payment;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +14,6 @@ class CreatePayment extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['payment_no'] = Payment::generatePaymentNo();
         $data['received_by'] = $data['received_by'] ?? Auth::id();
 
         // Clear irrelevant FK

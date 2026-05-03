@@ -22,12 +22,13 @@ class BillingSeeder extends Seeder
 
         // ── Sample Invoice ─────────────────────────────────────────
         $invoice = Invoice::firstOrCreate(
-            ['invoice_no' => 'WF-INV-000001'],
             [
-                'invoice_type'   => 'customer',
-                'customer_id'    => $customer->id,
-                'billing_month'  => now()->month,
-                'billing_year'   => now()->year,
+                'invoice_type' => 'customer',
+                'customer_id' => $customer->id,
+                'billing_month' => now()->month,
+                'billing_year' => now()->year,
+            ],
+            [
                 'invoice_date'   => now()->toDateString(),
                 'due_date'       => now()->addDays(15)->toDateString(),
                 'subtotal'       => 400.00,
@@ -43,7 +44,6 @@ class BillingSeeder extends Seeder
         // ── Sample Partial Payment ─────────────────────────────────
         if ($invoice->paid_amount == 0) {
             Payment::create([
-                'payment_no'     => Payment::generatePaymentNo(),
                 'payment_type'   => 'customer',
                 'customer_id'    => $customer->id,
                 'invoice_id'     => $invoice->id,

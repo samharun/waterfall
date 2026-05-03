@@ -382,7 +382,6 @@ class InvoiceResource extends Resource
                     ])
                     ->action(function (Invoice $record, array $data) {
                         Payment::create([
-                            'payment_no'     => Payment::generatePaymentNo(),
                             'payment_type'   => $record->invoice_type,
                             'customer_id'    => $record->customer_id,
                             'dealer_id'      => $record->dealer_id,

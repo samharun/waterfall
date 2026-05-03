@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Invoice extends Model
 {
@@ -49,15 +51,36 @@ class Invoice extends Model
     {
         static::creating(function (Invoice $invoice) {
             if (empty($invoice->invoice_no)) {
-                $invoice->invoice_no = self::generateInvoiceNo();
+                $invoice->invoice_no = self::generateInvoiceNo($invoice->invoice_date);
             }
         });
     }
 
-    public static function generateInvoiceNo(): string
+    public static function generateInvoiceNo(null|string|Carbon $date = null): string
     {
-        $max = self::withTrashed()->max('id') ?? 0;
-        return 'WF-INV-' . str_pad($max + 1, 6, '0', STR_PAD_LEFT);
+        $sequenceDate = $date instanceof Carbon
+            ? $date->toDateString()
+            : Carbon::parse($date ?? today())->toDateString();
+
+        $nextNumber = DB::transaction(function () use ($sequenceDate): int {
+            InvoiceNumberSequence::query()->insertOrIgnore([
+                'sequence_date' => $sequenceDate,
+                'last_number' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $sequence = InvoiceNumberSequence::query()
+                ->whereDate('sequence_date', $sequenceDate)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $sequence->increment('last_number');
+
+            return $sequence->last_number;
+        });
+
+        return 'WF-INV-' . Carbon::parse($sequenceDate)->format('ymd') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     // ── Relationships ──────────────────────────────────────────────

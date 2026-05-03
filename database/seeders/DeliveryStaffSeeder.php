@@ -38,7 +38,6 @@ class DeliveryStaffSeeder extends Seeder
 
         if ($order) {
             Delivery::create([
-                'delivery_no'       => Delivery::generateDeliveryNo(),
                 'order_id'          => $order->id,
                 'zone_id'           => $order->zone_id,
                 'delivery_staff_id' => $staff->id,
