@@ -174,6 +174,25 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Delivery::class, 'delivery_staff_id');
     }
 
+    public function currentActiveDelivery(): HasOne
+    {
+        return $this->hasOne(Delivery::class, 'delivery_staff_id')
+            ->whereNotIn('delivery_status', [
+                'cancelled',
+                'delivered',
+                'partial_delivered',
+                'not_delivered',
+                'customer_unavailable',
+                'failed',
+            ])
+            ->latestOfMany('assigned_at');
+    }
+
+    public function latestLocation(): HasOne
+    {
+        return $this->hasOne(DeliveryStaffLocation::class);
+    }
+
     public function fcmTokens(): HasMany
     {
         return $this->hasMany(UserFcmToken::class);

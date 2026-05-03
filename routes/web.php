@@ -10,6 +10,7 @@ use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\RegisterController;
 use App\Http\Controllers\Customer\SubscriptionController;
 use App\Http\Controllers\Admin\CustomerQrController;
+use App\Http\Controllers\Admin\DeliveryStaffLocationController;
 use App\Http\Controllers\Admin\InvoicePrintController;
 use App\Http\Controllers\Admin\PaymentReceiptPrintController;
 use App\Http\Controllers\Dealer\AuthController as DealerAuthController;
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'back.office'])->group(function () {
         ->name('admin.invoices.print');
     Route::get('/admin/payments/{payment}/print', [PaymentReceiptPrintController::class, 'print'])
         ->name('admin.payments.print');
+    Route::get('/admin/delivery-staff-locations', DeliveryStaffLocationController::class)
+        ->name('admin.delivery-staff-locations.index');
 
     Route::prefix('/admin/customers')->name('admin.customers.')->group(function () {
         Route::get('/qr/bulk-print', [CustomerQrController::class, 'bulkPrint'])

@@ -53,6 +53,7 @@ Route::prefix('delivery')->group(function () {
         Route::get('/today', [DeliveryStaffController::class, 'todayDeliveries']);
         Route::post('/update-status', [DeliveryStaffController::class, 'updateStatus']);
         Route::post('/bulk-update', [DeliveryStaffController::class, 'bulkUpdate']);
+        Route::post('/location', [DeliveryStaffController::class, 'updateLocation']);
     });
 });
 

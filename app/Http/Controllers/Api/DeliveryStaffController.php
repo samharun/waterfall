@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\Delivery;
+use App\Models\DeliveryStaffLocation;
 use App\Models\JarDeposit;
 use App\Models\Payment;
 use App\Models\Product;
@@ -13,6 +14,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -170,6 +172,54 @@ class DeliveryStaffController extends Controller
 
         return $this->successResponse('Bulk delivery update completed successfully.', [
             'updated_count' => $updatedCount,
+        ]);
+    }
+
+    public function updateLocation(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryStaff($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'accuracy' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
+            'speed' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
+            'heading' => ['nullable', 'numeric', 'between:0,360'],
+            'battery_level' => ['nullable', 'integer', 'between:0,100'],
+            'tracked_at' => ['nullable', 'date'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $data = $validator->validated();
+
+        $location = DeliveryStaffLocation::updateOrCreate(
+            ['user_id' => $request->user()->id],
+            [
+                'latitude' => $data['latitude'],
+                'longitude' => $data['longitude'],
+                'accuracy' => $data['accuracy'] ?? null,
+                'speed' => $data['speed'] ?? null,
+                'heading' => $data['heading'] ?? null,
+                'battery_level' => $data['battery_level'] ?? null,
+                'tracked_at' => isset($data['tracked_at']) ? Carbon::parse($data['tracked_at']) : now(),
+            ],
+        );
+
+        return $this->successResponse('Location updated successfully.', [
+            'location' => [
+                'latitude' => $location->latitude,
+                'longitude' => $location->longitude,
+                'accuracy' => $location->accuracy,
+                'speed' => $location->speed,
+                'heading' => $location->heading,
+                'battery_level' => $location->battery_level,
+                'tracked_at' => $location->tracked_at?->toIso8601String(),
+            ],
         ]);
     }
 
