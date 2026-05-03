@@ -50,7 +50,6 @@ class OrderController extends Controller
         $lineTotal = $qty * $unitPrice;
 
         $order = Order::create([
-            'order_no'               => Order::generateOrderNo(),
             'order_type'             => 'dealer',
             'dealer_id'              => $dealer->id,
             'zone_id'                => $dealer->zone_id,

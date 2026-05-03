@@ -79,7 +79,6 @@ class GenerateRecurringOrders extends Command
             try {
                 DB::transaction(function () use ($sub, $customer, $product, $unitPrice, $lineTotal, $targetDate) {
                     $order = Order::create([
-                        'order_no'               => Order::generateOrderNo(),
                         'order_type'             => 'customer',
                         'customer_id'            => $customer->id,
                         'subscription_id'        => $sub->id,

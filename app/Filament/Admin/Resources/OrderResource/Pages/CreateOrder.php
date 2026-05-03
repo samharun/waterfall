@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\OrderResource\Pages;
 
 use App\Filament\Admin\Resources\OrderResource;
-use App\Models\Order;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,9 +12,6 @@ class CreateOrder extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Auto-generate order number
-        $data['order_no'] = Order::generateOrderNo();
-
         // Set ordered_by to current user
         $data['ordered_by'] = $data['ordered_by'] ?? Auth::id();
 

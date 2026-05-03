@@ -27,7 +27,6 @@ class OrderSeeder extends Seeder
         $lineTotal = $qty * $unitPrice;
 
         $order = Order::create([
-            'order_no'               => Order::generateOrderNo(),
             'order_type'             => 'customer',
             'customer_id'            => $customer->id,
             'zone_id'                => $customer->zone_id,
