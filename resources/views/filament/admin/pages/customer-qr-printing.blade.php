@@ -4,6 +4,9 @@
         $zones        = $this->getZones();
         $totalCount   = $this->getTotalCount();
         $selectedCount = $this->getSelectedCount();
+        $approvedCount = \App\Models\Customer::where('approval_status', 'approved')->count();
+        $pendingCount = \App\Models\Customer::where('approval_status', 'pending')->count();
+        $zonedCount = \App\Models\Customer::whereNotNull('zone_id')->count();
     @endphp
 
     {{-- Page header actions --}}
@@ -39,8 +42,28 @@
         </div>
     </div>
 
+    {{-- KPI Cards --}}
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div style="background:linear-gradient(135deg,#0077B6,#005f92);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,119,182,.2)">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Filtered Customers</div>
+            <div style="font-size:30px;font-weight:800;color:#fff">{{ number_format($customers->count()) }}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#16a34a,#15803d);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(22,163,74,.2)">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Approved</div>
+            <div style="font-size:30px;font-weight:800;color:#fff">{{ number_format($approvedCount) }}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(245,158,11,.2)">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pending Approval</div>
+            <div style="font-size:30px;font-weight:800;color:#fff">{{ number_format($pendingCount) }}</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+            <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Assigned Zones</div>
+            <div style="font-size:30px;font-weight:800;color:#0077B6">{{ number_format($zonedCount) }}</div>
+        </div>
+    </div>
+
     {{-- Filters --}}
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;box-shadow:0 1px 3px rgba(0,0,0,.06)">
 
         {{-- Search --}}
         <div style="flex:1;min-width:180px">
@@ -49,7 +72,7 @@
                 wire:model.live.debounce.400ms="search"
                 type="text"
                 placeholder="Name, ID or mobile..."
-                style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;color:#111827;outline:none;box-sizing:border-box"
+                style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;color:#111827;background:#f9fafb;outline:none;box-sizing:border-box"
             />
         </div>
 
@@ -58,7 +81,7 @@
             <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Zone</label>
             <select
                 wire:model.live="zone_id"
-                style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;color:#111827;background:#fff;outline:none">
+                style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;color:#111827;background:#f9fafb;outline:none">
                 <option value="">All Zones</option>
                 @foreach($zones as $zone)
                     <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -71,7 +94,7 @@
             <label style="display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Status</label>
             <select
                 wire:model.live="approval_status"
-                style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;color:#111827;background:#fff;outline:none">
+                style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;color:#111827;background:#f9fafb;outline:none">
                 <option value="">All Statuses</option>
                 <option value="approved">Approved</option>
                 <option value="pending">Pending</option>
@@ -82,16 +105,16 @@
         {{-- Clear --}}
         <button
             wire:click="$set('search', null); $set('zone_id', null); $set('approval_status', 'approved'); $set('selected_ids', []); $set('select_all', false)"
-            style="padding:7px 12px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;color:#374151;font-size:12px;cursor:pointer">
+            style="padding:8px 14px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#374151;font-size:12px;font-weight:600;cursor:pointer">
             Clear
         </button>
     </div>
 
     {{-- Customer table --}}
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)">
 
         {{-- Table header --}}
-        <div style="display:grid;grid-template-columns:36px 1fr 120px 140px 100px 160px;gap:0;background:#f9fafb;border-bottom:1px solid #e5e7eb;padding:8px 16px;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">
+        <div style="display:grid;grid-template-columns:36px 1fr 120px 140px 100px 160px;gap:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:10px 16px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em">
             <div>
                 <input type="checkbox"
                        wire:model.live="select_all"
@@ -189,7 +212,7 @@
 
     {{-- Selection summary bar --}}
     @if($selectedCount > 0)
-        <div style="position:sticky;bottom:0;margin-top:12px;padding:12px 16px;background:#0077B6;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="position:sticky;bottom:0;margin-top:12px;padding:12px 16px;background:#0077B6;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px rgba(0,119,182,.2)">
             <span style="font-size:13px;color:#fff;font-weight:500">
                 {{ $selectedCount }} customer{{ $selectedCount !== 1 ? 's' : '' }} selected
             </span>
