@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dealer Portal') — Waterfall</title>
+    <title>@yield('title', 'Dealer Portal') | Waterfall</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
-        .nav { background: #1e3a5f; color: #fff; padding: 0 1rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); overflow-x: auto; }
+        .nav { background: #1e3a5f; color: #fff; padding: 0 1rem; display: flex; align-items: center; justify-content: space-between; gap: .9rem; min-height: 58px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
         .nav-brand { font-weight: 700; font-size: 1rem; color: #7dd3fc; text-decoration: none; white-space: nowrap; margin-right: .5rem; }
-        .nav-menu { display: flex; gap: .2rem; align-items: center; flex-shrink: 0; }
-        .nav-link { color: rgba(255,255,255,.85); text-decoration: none; padding: .35rem .5rem; border-radius: 6px; font-size: .78rem; white-space: nowrap; }
-        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,.15); color: #fff; }
-        .nav-logout { background: rgba(239,68,68,.2); border: 1px solid rgba(239,68,68,.4); color: #fca5a5; padding: .3rem .6rem; border-radius: 6px; font-size: .78rem; cursor: pointer; white-space: nowrap; }
+        .nav-menu { display: flex; gap: .25rem; align-items: center; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+        .nav-menu::-webkit-scrollbar { display: none; }
+        .nav-link { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; color: rgba(255,255,255,.85); text-decoration: none; padding: 0 .65rem; border: 1px solid transparent; border-radius: 8px; font-size: .8rem; font-weight: 600; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.22); color: #fff; }
+        .nav-link.active { font-weight: 700; }
+        .nav-logout { background: rgba(239,68,68,.2); border: 1px solid rgba(239,68,68,.4); color: #fecaca; min-height: 36px; padding: 0 .7rem; border-radius: 8px; font-size: .8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .nav-logout:hover { background: rgba(239,68,68,.35); }
 
         /* Logo */
-        .nav-logo { display: flex; align-items: center; text-decoration: none; color: #7dd3fc; }
-        .nav-logo-img { width: 40px; height: auto; }
+        .nav-logo { display: flex; align-items: center; text-decoration: none; color: #7dd3fc; flex-shrink: 0; }
+        .nav-logo-img { width: 42px; height: auto; display: block; }
 
         .main { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
         .card { background: #fff; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
@@ -63,6 +65,15 @@
         .pagination .active span { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
         .price-custom { color: #059669; font-weight: 700; }
         .price-default { color: #64748b; }
+        @media (max-width: 720px) {
+            .nav { align-items: stretch; flex-direction: column; gap: .55rem; padding: .65rem .75rem; }
+            .nav-logo { justify-content: center; }
+            .nav-menu { width: 100%; padding-bottom: 2px; }
+        }
+        @media (max-width: 480px) {
+            .nav-link, .nav-logout { min-height: 34px; padding: 0 .6rem; font-size: .76rem; }
+            .main { padding: 1rem .75rem 4rem; }
+        }
     </style>
 </head>
 <body>
@@ -76,6 +87,7 @@
         <a href="{{ route('dealer.orders.index') }}" class="nav-link {{ request()->routeIs('dealer.orders.*') ? 'active' : '' }}">Orders</a>
         <a href="{{ route('dealer.invoices.index') }}" class="nav-link {{ request()->routeIs('dealer.invoices.*') ? 'active' : '' }}">Bills</a>
         <a href="{{ route('dealer.payments.index') }}" class="nav-link {{ request()->routeIs('dealer.payments.*') ? 'active' : '' }}">Payments</a>
+        <a href="{{ route('dealer.jar-deposits.index') }}" class="nav-link {{ request()->routeIs('dealer.jar-deposits.*') ? 'active' : '' }}">Jars</a>
         <a href="{{ route('dealer.profile') }}" class="nav-link {{ request()->routeIs('dealer.profile') ? 'active' : '' }}">Profile</a>
         <form method="POST" action="{{ route('dealer.logout') }}" style="display:inline">
             @csrf

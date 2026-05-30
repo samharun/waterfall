@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Waterfall') — {{ app()->getLocale() === 'bn' ? 'গ্রাহক পোর্টাল' : 'Customer Portal' }}</title>
+    <title>@yield('title', 'Waterfall') | Customer Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -37,11 +37,12 @@
         /* ── Top Navigation ─────────────────────────────────────── */
         .nav {
             background: var(--primary);
-            padding: 0 20px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 60px;
+            gap: 14px;
+            min-height: 60px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -54,6 +55,7 @@
             gap: 10px;
             text-decoration: none;
             color: #fff;
+            flex-shrink: 0;
         }
         .nav-brand-logo {
             width: 36px;
@@ -72,26 +74,42 @@
 
         .nav-menu {
             display: flex;
-            gap: 2px;
+            gap: 4px;
             align-items: center;
+            min-width: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .nav-menu::-webkit-scrollbar {
+            display: none;
         }
 
         .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
             color: rgba(255,255,255,.8);
             text-decoration: none;
-            padding: 6px 10px;
+            padding: 0 11px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
-            transition: background .15s, color .15s;
+            border: 1px solid transparent;
+            transition: background .15s, color .15s, border-color .15s;
             white-space: nowrap;
         }
         .nav-link:hover { background: rgba(255,255,255,.15); color: #fff; }
-        .nav-link.active { background: rgba(255,255,255,.2); color: #fff; font-weight: 600; }
+        .nav-link.active { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.28); color: #fff; font-weight: 700; }
 
-        .lang-toggle { display: flex; gap: 3px; margin: 0 6px; }
+        .lang-toggle { display: flex; gap: 3px; margin: 0 4px; flex-shrink: 0; }
         .lang-btn {
-            padding: 3px 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 30px;
+            padding: 0 8px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: 700;
@@ -107,12 +125,14 @@
             background: rgba(255,255,255,.15);
             border: 1px solid rgba(255,255,255,.3);
             color: #fff;
-            padding: 6px 12px;
+            min-height: 36px;
+            padding: 0 12px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: background .15s;
+            white-space: nowrap;
         }
         .nav-logout:hover { background: rgba(255,255,255,.25); }
 
@@ -380,8 +400,43 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
 
+        @media (max-width: 720px) {
+            .nav {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px 12px;
+            }
+
+            .nav-brand {
+                justify-content: center;
+            }
+
+            .nav-brand-logo {
+                width: 32px;
+                height: 32px;
+                border-radius: 9px;
+            }
+
+            .nav-menu {
+                width: 100%;
+                padding-bottom: 2px;
+            }
+        }
+
         @media (max-width: 480px) {
-            .nav-link span { display: none; }
+            .nav-link {
+                min-height: 34px;
+                padding: 0 10px;
+                font-size: 12px;
+            }
+
+            .nav-logout {
+                min-height: 34px;
+                padding: 0 10px;
+                font-size: 12px;
+            }
+
             .main { padding: 16px 12px 60px; }
         }
     </style>
@@ -413,6 +468,9 @@
         <a href="{{ route('customer.payments.index') }}" class="nav-link {{ request()->routeIs('customer.payments.*') ? 'active' : '' }}">
             <span>{{ __('customer.nav_payments') }}</span>
         </a>
+        <a href="{{ route('customer.jar-deposits.index') }}" class="nav-link {{ request()->routeIs('customer.jar-deposits.*') ? 'active' : '' }}">
+            <span>{{ __('customer.jar_deposits') }}</span>
+        </a>
         <a href="{{ route('customer.subscription.show') }}" class="nav-link {{ request()->routeIs('customer.subscription.*') ? 'active' : '' }}">
             <span>{{ __('customer.nav_subscription') }}</span>
         </a>
@@ -421,7 +479,7 @@
         </a>
 
         <div class="lang-toggle">
-            <a href="{{ route('locale.switch', 'bn') }}" class="lang-btn {{ $locale === 'bn' ? 'active-lang' : '' }}">বাং</a>
+            <a href="{{ route('locale.switch', 'bn') }}" class="lang-btn {{ $locale === 'bn' ? 'active-lang' : '' }}">BN</a>
             <a href="{{ route('locale.switch', 'en') }}" class="lang-btn {{ $locale === 'en' ? 'active-lang' : '' }}">EN</a>
         </div>
 

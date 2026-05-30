@@ -10,7 +10,8 @@ use App\Filament\Admin\Widgets\RecentActivityWidget;
 use App\Filament\Admin\Widgets\TodayCollectionSummaryWidget;
 use App\Filament\Admin\Widgets\TodayDeliveryStatusWidget;
 use App\Filament\Admin\Widgets\UnassignedDeliveriesWidget;
-use App\Filament\Admin\Widgets\ZoneDeliverySummaryWidget;use Filament\Http\Middleware\Authenticate;
+use App\Filament\Admin\Widgets\ZoneDeliverySummaryWidget;
+use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -58,9 +59,15 @@ class AdminPanelProvider extends PanelProvider
                     background: #0077B6 !important;
                     border-bottom: none !important;
                     box-shadow: 0 2px 8px rgba(0,119,182,.25) !important;
-                    height: 56px !important;
+                    min-height: 56px !important;
                 }
-                .fi-topbar-nav { gap: 2px !important; }
+                .fi-topbar-nav {
+                    gap: 2px !important;
+                    min-width: 0 !important;
+                    overflow-x: auto !important;
+                    scrollbar-width: none !important;
+                }
+                .fi-topbar-nav::-webkit-scrollbar { display: none !important; }
 
                 /* Brand / logo area */
                 .fi-logo { color: #fff !important; font-weight: 800 !important; font-size: 16px !important; }
@@ -71,9 +78,11 @@ class AdminPanelProvider extends PanelProvider
                     font-size: 13px !important;
                     font-weight: 500 !important;
                     color: rgba(255,255,255,.85) !important;
-                    padding: 6px 12px !important;
+                    min-height: 36px !important;
+                    padding: 0 12px !important;
                     border-radius: 8px !important;
-                    transition: background .15s, color .15s !important;
+                    border: 1px solid transparent !important;
+                    transition: background .15s, color .15s, border-color .15s !important;
                     white-space: nowrap !important;
                 }
                 .fi-topbar-nav-item-button:hover {
@@ -83,6 +92,7 @@ class AdminPanelProvider extends PanelProvider
                 .fi-topbar-nav-item-button.fi-active,
                 .fi-topbar-nav-item-button[aria-current="page"] {
                     background: rgba(255,255,255,.2) !important;
+                    border-color: rgba(255,255,255,.28) !important;
                     color: #fff !important;
                     font-weight: 700 !important;
                 }
@@ -99,7 +109,8 @@ class AdminPanelProvider extends PanelProvider
                     border-radius: 12px !important;
                     box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
                     overflow: hidden !important;
-                    min-width: 200px !important;
+                    min-width: 220px !important;
+                    max-width: min(92vw, 320px) !important;
                 }
                 .fi-dropdown-list { padding: 6px !important; }
                 .fi-dropdown-list-item {
@@ -376,6 +387,26 @@ class AdminPanelProvider extends PanelProvider
                 ::-webkit-scrollbar-track { background: #f1f5f9; }
                 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
                 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+                @media (max-width: 768px) {
+                    .fi-topbar {
+                        align-items: stretch !important;
+                    }
+
+                    .fi-topbar-nav {
+                        padding-bottom: 2px !important;
+                    }
+
+                    .fi-topbar-nav-item-button {
+                        min-height: 34px !important;
+                        padding: 0 10px !important;
+                        font-size: 12px !important;
+                    }
+
+                    .fi-main {
+                        padding: 16px 12px !important;
+                    }
+                }
                 </style>
             HTML))
             ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): HtmlString => new HtmlString(<<<'HTML'
@@ -419,6 +450,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Order & Delivery'),
                 NavigationGroup::make('Customers'),
                 NavigationGroup::make('Dealers'),
+                NavigationGroup::make('Accounts'),
                 NavigationGroup::make('Reports'),
                 NavigationGroup::make('Administration'),
             ])

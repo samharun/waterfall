@@ -39,8 +39,20 @@ class DeliveriesOverview extends Page
     public function getDeliveries(): Collection
     {
         return Delivery::with(['order.customer', 'order.dealer', 'zone', 'deliveryStaff'])
-            ->when($this->date_from,         fn ($q) => $q->whereDate('assigned_at', '>=', $this->date_from))
-            ->when($this->date_until,        fn ($q) => $q->whereDate('assigned_at', '<=', $this->date_until))
+            ->when($this->date_from, fn ($q) => $q->where(function ($q) {
+                $q->whereDate('assigned_at', '>=', $this->date_from)
+                    ->orWhere(function ($q) {
+                        $q->whereNull('assigned_at')
+                            ->whereDate('created_at', '>=', $this->date_from);
+                    });
+            }))
+            ->when($this->date_until, fn ($q) => $q->where(function ($q) {
+                $q->whereDate('assigned_at', '<=', $this->date_until)
+                    ->orWhere(function ($q) {
+                        $q->whereNull('assigned_at')
+                            ->whereDate('created_at', '<=', $this->date_until);
+                    });
+            }))
             ->when($this->delivery_status,   fn ($q) => $q->where('delivery_status', $this->delivery_status))
             ->when($this->zone_id,           fn ($q) => $q->where('zone_id', $this->zone_id))
             ->when($this->delivery_staff_id, fn ($q) => $q->where('delivery_staff_id', $this->delivery_staff_id))
