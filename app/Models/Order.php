@@ -87,6 +87,22 @@ class Order extends Model
                 OrderStatusChanged::dispatch($order->fresh(), $oldStatus, $newStatus);
             }
 
+            if ($newStatus === 'assigned') {
+                $delivery = $order->deliveries()
+                    ->whereNotIn('delivery_status', ['cancelled'])
+                    ->latest('id')
+                    ->first();
+
+                if ($delivery && $delivery->delivery_status === 'pending') {
+                    $delivery->update([
+                        'delivery_status' => 'assigned',
+                        'assigned_at' => $delivery->assigned_at ?? now(),
+                    ]);
+                }
+
+                return;
+            }
+
             if ($order->order_status !== 'confirmed') {
                 return;
             }
