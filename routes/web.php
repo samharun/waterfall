@@ -26,6 +26,13 @@ use App\Http\Controllers\Delivery\AuthController as DeliveryAuthController;
 use App\Http\Controllers\Delivery\DashboardController as DeliveryDashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\Delivery\PaymentCollectionController;
+use App\Livewire\Admin\Customers\Index as AdminCustomersIndex;
+use App\Livewire\Admin\CustomerPrices\Index as AdminCustomerPricesIndex;
+use App\Livewire\Admin\CustomerSubscriptions\Index as AdminCustomerSubscriptionsIndex;
+use App\Livewire\Admin\Dealers\Index as AdminDealersIndex;
+use App\Livewire\Admin\DealerPrices\Index as AdminDealerPricesIndex;
+use App\Livewire\Admin\Deliveries\Index as AdminDeliveriesIndex;
+use App\Livewire\Admin\Zones\Index as AdminZonesIndex;
 use Illuminate\Support\Facades\Route;
 
 //Route::get('/', fn () => redirect()->route('customer.login'));
@@ -42,6 +49,28 @@ Route::get('/locale/{lang}', function (string $lang) {
 
 // ── Admin Print Routes ─────────────────────────────────────────────
 Route::middleware(['auth', 'back.office'])->group(function () {
+    Route::get('/admin/livewire/zones', AdminZonesIndex::class)
+        ->name('admin.livewire.zones.index');
+    Route::get('/admin/zones-livewire', fn () => redirect()->route('admin.livewire.zones.index'));
+    Route::get('/admin/livewire/customers', AdminCustomersIndex::class)
+        ->name('admin.livewire.customers.index');
+    Route::get('/admin/customers-livewire', fn () => redirect()->route('admin.livewire.customers.index'));
+    Route::get('/admin/livewire/customer-prices', AdminCustomerPricesIndex::class)
+        ->name('admin.livewire.customer-prices.index');
+    Route::get('/admin/customer-prices-livewire', fn () => redirect()->route('admin.livewire.customer-prices.index'));
+    Route::get('/admin/livewire/customer-subscriptions', AdminCustomerSubscriptionsIndex::class)
+        ->name('admin.livewire.customer-subscriptions.index');
+    Route::get('/admin/customer-subscriptions-livewire', fn () => redirect()->route('admin.livewire.customer-subscriptions.index'));
+    Route::get('/admin/livewire/dealers', AdminDealersIndex::class)
+        ->name('admin.livewire.dealers.index');
+    Route::get('/admin/dealers-livewire', fn () => redirect()->route('admin.livewire.dealers.index'));
+    Route::get('/admin/livewire/dealer-prices', AdminDealerPricesIndex::class)
+        ->name('admin.livewire.dealer-prices.index');
+    Route::get('/admin/dealer-prices-livewire', fn () => redirect()->route('admin.livewire.dealer-prices.index'));
+    Route::get('/admin/livewire/deliveries', AdminDeliveriesIndex::class)
+        ->name('admin.livewire.deliveries.index');
+    Route::get('/admin/deliveries-livewire', fn () => redirect()->route('admin.livewire.deliveries.index'));
+
     Route::get('/admin/invoices/{invoice}/print', [InvoicePrintController::class, 'print'])
         ->name('admin.invoices.print');
     Route::get('/admin/payments/{payment}/print', [PaymentReceiptPrintController::class, 'print'])

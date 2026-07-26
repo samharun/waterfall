@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+    --wf-brand: #465fff;
+    --wf-brand-dark: #3641f5;
+    --wf-bg: #f9fafb;
+    --wf-panel: #ffffff;
+    --wf-border: #e4e7ec;
+    --wf-text: #101828;
+    --wf-muted: #667085;
+}
+
+body { background: var(--wf-bg) !important; color: var(--wf-text) !important; font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important; }
+
+/* TailAdmin sidebar */
+.fi-sidebar { width: 290px !important; border-right: 1px solid var(--wf-border) !important; background: #fff !important; box-shadow: 2px 0 8px rgba(16,24,40,.03) !important; }
+.fi-sidebar-header { display: none !important; }
+.fi-sidebar-header .fi-logo { color: var(--wf-text) !important; font-size: 20px !important; font-weight: 700 !important; }
+.fi-sidebar-header .fi-logo img { filter: none !important; }
+.fi-sidebar-nav { padding: 20px 14px 28px !important; }
+.fi-sidebar-group { gap: 6px !important; }
+.fi-sidebar-group-label { margin: 16px 10px 7px !important; color: #98a2b3 !important; font-size: 11px !important; font-weight: 600 !important; letter-spacing: .08em !important; text-transform: uppercase !important; }
+.fi-sidebar-item-button { min-height: 42px !important; border-radius: 8px !important; padding: 9px 11px !important; color: #475467 !important; font-size: 14px !important; font-weight: 500 !important; }
+.fi-sidebar-item-label { color: #475467 !important; opacity: 1 !important; }
+.fi-sidebar-item-button:hover { background: #f2f4f7 !important; color: var(--wf-text) !important; }
+.fi-sidebar-item-button:hover .fi-sidebar-item-label { color: var(--wf-text) !important; }
+.fi-sidebar-item.fi-active > .fi-sidebar-item-button { background: #ecf3ff !important; color: var(--wf-brand) !important; }
+.fi-sidebar-item.fi-active .fi-sidebar-item-label { color: var(--wf-brand) !important; }
+.fi-sidebar-item-icon { width: 19px !important; height: 19px !important; color: #667085 !important; }
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon { color: var(--wf-brand) !important; }
+.fi-sidebar-group-button { color: #667085 !important; }
+
+/* Header */
+.fi-topbar { left: 290px !important; min-height: 78px !important; border-bottom: 1px solid var(--wf-border) !important; background: rgba(255,255,255,.96) !important; box-shadow: none !important; backdrop-filter: blur(12px); }
+.fi-topbar nav { min-height: 78px !important; padding-right: 28px !important; padding-left: 28px !important; }
+.wf-topbar-brand { display: flex; min-width: 220px; align-items: center; gap: 11px; color: var(--wf-text); text-decoration: none; }
+.wf-topbar-brand img { width: 42px; height: 42px; object-fit: contain; }
+.wf-topbar-brand span { display: flex; flex-direction: column; line-height: 1.15; }
+.wf-topbar-brand strong { font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+.wf-topbar-brand small { margin-top: 4px; color: var(--wf-muted); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+.fi-topbar-item-button, .fi-topbar-open-sidebar-btn, .fi-topbar-close-sidebar-btn { color: var(--wf-muted) !important; }
+.fi-topbar-item-button:hover, .fi-topbar-open-sidebar-btn:hover { border-radius: 8px !important; background: #f2f4f7 !important; color: var(--wf-text) !important; }
+.fi-user-avatar { background: #ecf3ff !important; color: var(--wf-brand) !important; }
+
+/* Dashboard canvas */
+.fi-main { max-width: 1680px !important; padding: 20px 28px 28px !important; }
+.fi-page { gap: 16px !important; }
+.fi-page-header { margin: 0 !important; }
+.fi-page-content { gap: 16px !important; }
+.fi-header-heading, .fi-page-header-heading { color: var(--wf-text) !important; font-size: 28px !important; font-weight: 600 !important; letter-spacing: -.03em !important; }
+.fi-header-subheading, .fi-page-header-subheading { color: var(--wf-muted) !important; }
+.fi-breadcrumbs-item-label { color: var(--wf-muted) !important; opacity: 1 !important; }
+.fi-breadcrumbs-item-label:hover { color: var(--wf-brand) !important; }
+.fi-breadcrumbs-item-separator { color: #98a2b3 !important; }
+
+/* Force a consistent light admin shell even when a stale dark-mode class is present. */
+.dark .fi-header-heading, .dark .fi-page-header-heading { color: var(--wf-text) !important; }
+.dark .fi-sidebar-item-label { color: #475467 !important; }
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-label { color: var(--wf-brand) !important; }
+.dark .fi-breadcrumbs-item-label { color: var(--wf-muted) !important; }
+.fi-wi-widget { border-radius: 14px !important; }
+.fi-wi-widget > div, .fi-section, .fi-ta-ctn, .fi-wi-stats-overview-stat { border-color: var(--wf-border) !important; border-radius: 14px !important; box-shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04) !important; }
+.fi-wi-stats-overview-stat { padding: 20px !important; }
+.fi-wi-stats-overview-stat-label { color: var(--wf-muted) !important; font-size: 13px !important; font-weight: 500 !important; letter-spacing: 0 !important; text-transform: none !important; }
+.fi-wi-stats-overview-stat-value { color: var(--wf-text) !important; font-size: 28px !important; font-weight: 600 !important; }
+
+/* Shared Filament controls */
+.fi-btn { border-radius: 8px !important; font-weight: 500 !important; }
+.fi-btn-color-primary { border-color: var(--wf-brand) !important; background: var(--wf-brand) !important; }
+.fi-btn-color-primary:hover { border-color: var(--wf-brand-dark) !important; background: var(--wf-brand-dark) !important; }
+.fi-input-wrp, .fi-select-input { border-color: #d0d5dd !important; border-radius: 8px !important; background: #fff !important; }
+.fi-input-wrp:focus-within { border-color: #7592ff !important; box-shadow: 0 0 0 4px rgba(70,95,255,.12) !important; }
+.fi-ta-header-cell { background: #f9fafb !important; color: var(--wf-muted) !important; font-weight: 500 !important; }
+.fi-ta-row:hover { background: #f9fafb !important; }
+.fi-dropdown-panel { border-color: var(--wf-border) !important; border-radius: 10px !important; box-shadow: 0 12px 24px rgba(16,24,40,.12) !important; }
+
+/* Normalize the custom Livewire dashboard widgets without changing their data logic. */
+.fi-wi-widget > div[style*="background:#fff"] { border-color: var(--wf-border) !important; border-radius: 14px !important; box-shadow: 0 1px 3px rgba(16,24,40,.08) !important; }
+.fi-wi-widget div[style*="background:#f9fafb"] { background: #fcfcfd !important; }
+.fi-wi-widget span[style*="color:#111827"], .fi-wi-widget div[style*="color:#111827"] { color: var(--wf-text) !important; }
+.fi-wi-widget a[style*="color:#2563eb"] { color: var(--wf-brand) !important; }
+
+@media (max-width: 1023px) {
+    .fi-topbar { left: 0 !important; }
+    .fi-main { padding: 24px 18px !important; }
+    .wf-topbar-brand { min-width: 0; }
+}
+@media (max-width: 640px) {
+    .fi-main { padding: 20px 12px !important; }
+    .fi-header-heading, .fi-page-header-heading { font-size: 24px !important; }
+    .fi-wi-widget div[style*="grid-template-columns:repeat(4"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .wf-topbar-brand small { display: none; }
+    .wf-topbar-brand strong { font-size: 16px; }
+    .wf-topbar-brand img { width: 36px; height: 36px; }
+}
