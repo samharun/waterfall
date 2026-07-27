@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendFirebaseNotificationJob;
+use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class DeliveryManagerController extends Controller
 {
@@ -197,6 +201,125 @@ class DeliveryManagerController extends Controller
         return $this->successResponse('Order confirmed successfully. Delivery created.', [
             'order' => $this->orderPayload($order),
         ]);
+    }
+
+    public function searchCustomers(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryManager($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'query' => ['required', 'string', 'max:100'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $query = trim($validator->validated()['query']);
+        $customers = Customer::query()
+            ->approved()
+            ->with('zone')
+            ->whereIn('zone_id', $this->managedZoneIds($request->user()))
+            ->where(function (Builder $builder) use ($query): void {
+                $builder->where('customer_id', 'like', "%{$query}%")
+                    ->orWhere('name', 'like', "%{$query}%")
+                    ->orWhere('mobile', 'like', "%{$query}%");
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn (Customer $customer): array => $this->customerPayload($customer))
+            ->values()
+            ->all();
+
+        return $this->successResponse('Customers loaded successfully.', $customers);
+    }
+
+    public function createCustomerOrder(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryManager($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'customer_id' => ['required', 'string', 'exists:customers,customer_id'],
+            'jar_quantity' => ['required', 'integer', 'min:1', 'max:1000'],
+            'delivery_slot' => ['required', Rule::in(['now', 'morning', 'afternoon', 'evening'])],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $data = $validator->validated();
+        $customer = Customer::query()->approved()->where('customer_id', $data['customer_id'])->first();
+
+        if (! $customer || ! in_array((int) $customer->zone_id, $this->managedZoneIds($request->user()), true)) {
+            return $this->forbiddenResponse();
+        }
+
+        $product = Product::query()->where('product_type', 'jar')->where('status', 'active')->first();
+        if (! $product) {
+            return $this->errorResponse('No active jar product is available.', 422);
+        }
+
+        $unitPrice = (float) $product->getPriceForCustomer($customer->id, today()->toDateString());
+        $lineTotal = round($unitPrice * $data['jar_quantity'], 2);
+
+        try {
+            $order = DB::transaction(function () use ($customer, $product, $data, $unitPrice, $lineTotal, $request): Order {
+                $order = Order::create([
+                    'order_type' => 'customer',
+                    'customer_id' => $customer->id,
+                    'zone_id' => $customer->zone_id,
+                    'ordered_by' => $request->user()->id,
+                    'preferred_delivery_slot' => $data['delivery_slot'],
+                    'order_date' => today()->toDateString(),
+                    'subtotal' => $lineTotal,
+                    'discount' => 0,
+                    'delivery_charge' => 0,
+                    'total_amount' => $lineTotal,
+                    'payment_status' => 'unpaid',
+                    'order_status' => 'pending',
+                    'remarks' => $data['remarks'] ?? null,
+                ]);
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'quantity' => $data['jar_quantity'],
+                    'unit_price' => $unitPrice,
+                    'line_total' => $lineTotal,
+                ]);
+
+                return $order;
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Manager customer order creation failed.', ['message' => $exception->getMessage()]);
+
+            return $this->errorResponse('Server error. Please try again later.', 500);
+        }
+
+        $order->load(['customer.zone', 'items.product']);
+
+        return $this->successResponse('Customer order created successfully.', [
+            'order' => $this->orderPayload($order),
+        ], 201);
+    }
+
+    private function customerPayload(Customer $customer): array
+    {
+        return [
+            'customer_id' => $customer->customer_id,
+            'customer_name' => $customer->name,
+            'mobile' => $customer->mobile,
+            'address' => $customer->address,
+            'zone_name' => $customer->zone?->name,
+            'outstanding_due' => (float) $customer->current_due,
+        ];
     }
 
     private function orderPayload(Order $order): array

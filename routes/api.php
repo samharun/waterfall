@@ -54,6 +54,9 @@ Route::prefix('delivery')->group(function () {
         Route::post('/update-status', [DeliveryStaffController::class, 'updateStatus']);
         Route::post('/bulk-update', [DeliveryStaffController::class, 'bulkUpdate']);
         Route::post('/location', [DeliveryStaffController::class, 'updateLocation']);
+        Route::get('/search-customers', [DeliveryStaffController::class, 'searchCustomers']);
+        Route::post('/collections', [DeliveryStaffController::class, 'recordCollection']);
+        Route::post('/jar-collections', [DeliveryStaffController::class, 'recordJarCollection']);
     });
 });
 
@@ -67,4 +70,6 @@ Route::prefix('delivery-manager')
         Route::post('/reassign', [DeliveryManagerController::class, 'reassign']);
         Route::get('/pending-orders', [DeliveryManagerController::class, 'pendingOrders']);
         Route::post('/confirm-order', [DeliveryManagerController::class, 'confirmOrder']);
+        Route::get('/search-customers', [DeliveryManagerController::class, 'searchCustomers']);
+        Route::post('/create-customer-order', [DeliveryManagerController::class, 'createCustomerOrder']);
     });

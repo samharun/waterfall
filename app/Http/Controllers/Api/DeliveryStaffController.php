@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendFirebaseNotificationJob;
+use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryStaffLocation;
 use App\Models\JarDeposit;
@@ -221,6 +222,135 @@ class DeliveryStaffController extends Controller
                 'tracked_at' => $location->tracked_at?->toIso8601String(),
             ],
         ]);
+    }
+
+    public function searchCustomers(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryStaff($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'query' => ['required', 'string', 'max:100'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $query = trim($validator->validated()['query']);
+        $customers = Customer::query()
+            ->approved()
+            ->with('zone')
+            ->where(function (Builder $builder) use ($query): void {
+                $builder->where('customer_id', 'like', "%{$query}%")
+                    ->orWhere('name', 'like', "%{$query}%")
+                    ->orWhere('mobile', 'like', "%{$query}%");
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn (Customer $customer): array => $this->customerPayload($customer))
+            ->values()
+            ->all();
+
+        return $this->successResponse('Customers loaded successfully.', $customers);
+    }
+
+    public function recordCollection(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryStaff($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'customer_id' => ['required', 'string', 'exists:customers,customer_id'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $data = $validator->validated();
+        $customer = Customer::query()->approved()->where('customer_id', $data['customer_id'])->first();
+
+        if (! $customer) {
+            return $this->errorResponse('Customer not available.', 422);
+        }
+
+        $payment = Payment::create([
+            'payment_type' => 'customer',
+            'customer_id' => $customer->id,
+            'payment_date' => today()->toDateString(),
+            'amount' => $data['amount'],
+            'payment_method' => 'cash',
+            'received_by' => $request->user()->id,
+            'collection_source' => 'delivery_staff',
+            'collection_status' => 'accepted',
+            'collected_at' => now(),
+            'remarks' => $data['remarks'] ?? null,
+        ]);
+
+        return $this->successResponse('Collection recorded successfully.', [
+            'payment_id' => $payment->id,
+            'payment_no' => $payment->payment_no,
+        ]);
+    }
+
+    public function recordJarCollection(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryStaff($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'customer_id' => ['required', 'string', 'exists:customers,customer_id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $data = $validator->validated();
+        $customer = Customer::query()->approved()->where('customer_id', $data['customer_id'])->first();
+        $product = Product::query()->where('product_type', 'jar')->where('status', 'active')->first();
+
+        if (! $customer || ! $product) {
+            return $this->errorResponse('Customer or active jar product not available.', 422);
+        }
+
+        $jarDeposit = JarDeposit::create([
+            'party_type' => 'customer',
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'transaction_type' => 'jar_returned',
+            'quantity' => $data['quantity'],
+            'deposit_amount' => 0,
+            'transaction_date' => today()->toDateString(),
+            'remarks' => $data['remarks'] ?? null,
+            'created_by' => $request->user()->id,
+        ]);
+
+        return $this->successResponse('Empty jar collection recorded successfully.', [
+            'jar_deposit_id' => $jarDeposit->id,
+            'deposit_no' => $jarDeposit->deposit_no,
+        ]);
+    }
+
+    private function customerPayload(Customer $customer): array
+    {
+        return [
+            'customer_id' => $customer->customer_id,
+            'customer_name' => $customer->name,
+            'mobile' => $customer->mobile,
+            'address' => $customer->address,
+            'zone_name' => $customer->zone?->name,
+            'outstanding_due' => (float) $customer->current_due,
+        ];
     }
 
     private function todayDeliveriesQuery(int $staffId): Builder
