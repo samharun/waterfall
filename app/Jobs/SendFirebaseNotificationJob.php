@@ -19,10 +19,10 @@ class SendFirebaseNotificationJob implements ShouldQueue
      * @param  array<int, int>  $userIds
      */
     public function __construct(
-        private readonly array $userIds,
-        private readonly string $title,
-        private readonly string $body,
-        private readonly array $data = [],
+        public readonly array $userIds,
+        public readonly string $title,
+        public readonly string $body,
+        public readonly array $data = [],
     ) {
         $this->onQueue('notifications');
     }

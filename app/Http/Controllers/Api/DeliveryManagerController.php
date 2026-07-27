@@ -6,8 +6,10 @@ use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\Delivery;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
+use App\Models\Zone;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -134,13 +136,13 @@ class DeliveryManagerController extends Controller
 
         $zoneIds = $this->managedZoneIds($request->user());
 
-        $orders = \App\Models\Order::with(['customer.zone', 'dealer.zone', 'items.product'])
+        $orders = Order::with(['customer.zone', 'dealer.zone', 'items.product'])
             ->where('order_status', 'pending')
             ->whereIn('zone_id', $zoneIds)
             ->orderBy('order_date', 'asc')
             ->orderBy('created_at', 'asc')
             ->get()
-            ->map(fn (\App\Models\Order $order) => $this->orderPayload($order))
+            ->map(fn (Order $order) => $this->orderPayload($order))
             ->values()
             ->all();
 
@@ -165,7 +167,7 @@ class DeliveryManagerController extends Controller
             return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
-        $order = \App\Models\Order::with(['customer', 'dealer'])->find($validator->validated()['order_id']);
+        $order = Order::with(['customer', 'dealer'])->find($validator->validated()['order_id']);
 
         // Ensure order belongs to a zone managed by this manager
         $zoneIds = $this->managedZoneIds($request->user());
@@ -186,6 +188,7 @@ class DeliveryManagerController extends Controller
             });
         } catch (\Throwable $e) {
             Log::error('Order confirmation failed.', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+
             return $this->errorResponse('Server error. Please try again later.', 500);
         }
 
@@ -196,32 +199,32 @@ class DeliveryManagerController extends Controller
         ]);
     }
 
-    private function orderPayload(\App\Models\Order $order): array
+    private function orderPayload(Order $order): array
     {
         $party = $order->order_type === 'dealer' ? $order->dealer : $order->customer;
         $partyCode = $order->order_type === 'dealer' ? $party?->dealer_code : $party?->customer_id;
 
         return [
-            'id'             => $order->id,
-            'order_no'       => $order->order_no,
-            'order_type'     => $order->order_type,
-            'order_status'   => $order->order_status,
-            'customer_id'    => $partyCode,
-            'customer_name'  => $party?->name,
-            'mobile'         => $party?->mobile,
-            'address'        => $party?->address,
-            'zone_name'      => $order->zone?->name ?? $party?->zone?->name,
-            'order_date'     => $order->order_date?->toDateString(),
-            'delivery_slot'  => $order->preferred_delivery_slot,
-            'total_amount'   => (float) $order->total_amount,
+            'id' => $order->id,
+            'order_no' => $order->order_no,
+            'order_type' => $order->order_type,
+            'order_status' => $order->order_status,
+            'customer_id' => $partyCode,
+            'customer_name' => $party?->name,
+            'mobile' => $party?->mobile,
+            'address' => $party?->address,
+            'zone_name' => $order->zone?->name ?? $party?->zone?->name,
+            'order_date' => $order->order_date?->toDateString(),
+            'delivery_slot' => $order->preferred_delivery_slot,
+            'total_amount' => (float) $order->total_amount,
             'payment_status' => $order->payment_status,
-            'jar_quantity'   => $order->totalQuantity(),
-            'remarks'        => $order->remarks,
-            'items'          => $order->items->map(fn ($item) => [
+            'jar_quantity' => $order->totalQuantity(),
+            'remarks' => $order->remarks,
+            'items' => $order->items->map(fn ($item) => [
                 'product_name' => $item->product?->name,
-                'quantity'     => $item->quantity,
-                'unit_price'   => (float) $item->unit_price,
-                'line_total'   => (float) $item->line_total,
+                'quantity' => $item->quantity,
+                'unit_price' => (float) $item->unit_price,
+                'line_total' => (float) $item->line_total,
             ])->all(),
         ];
     }
@@ -332,6 +335,10 @@ class DeliveryManagerController extends Controller
 
     private function managedZoneIds(User $manager): array
     {
+        if (in_array($manager->role, ['admin', 'super_admin'], true)) {
+            return Zone::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+
         return $manager->managedZones()->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
 
@@ -416,6 +423,7 @@ class DeliveryManagerController extends Controller
 
     private function isDeliveryManager(mixed $user): bool
     {
-        return $user instanceof User && $user->role === 'delivery_manager';
+        return $user instanceof User
+            && in_array($user->role, ['delivery_manager', 'admin', 'super_admin'], true);
     }
 }

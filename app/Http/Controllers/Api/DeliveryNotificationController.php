@@ -83,6 +83,6 @@ class DeliveryNotificationController extends Controller
     private function isDeliveryUser(mixed $user): bool
     {
         return $user instanceof User
-            && in_array($user->role, ['delivery_staff', 'delivery_manager'], true);
+            && in_array($user->role, ['delivery_staff', 'delivery_manager', 'admin', 'super_admin'], true);
     }
 }

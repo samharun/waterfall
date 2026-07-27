@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Events\OrderStatusChanged;
+use App\Jobs\SendFirebaseNotificationJob;
 use App\Listeners\SendOrderStatusPushNotification;
 use App\Models\Customer;
 use App\Models\CustomerDeviceToken;
@@ -14,6 +15,7 @@ use App\Models\Zone;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -71,8 +73,14 @@ class CustomerOrderNotificationTest extends TestCase
 
     public function test_customer_order_creates_admin_notifications(): void
     {
+        Queue::fake();
+
         $admin = User::factory()->create([
             'role' => 'admin',
+        ]);
+
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
         ]);
 
         $deliveryManager = User::factory()->create([
@@ -123,6 +131,7 @@ class CustomerOrderNotificationTest extends TestCase
             ->assertJsonPath('data.total_quantity', 2);
 
         $this->assertSame(1, $admin->notifications()->count());
+        $this->assertSame(1, $superAdmin->notifications()->count());
         $this->assertSame(1, $deliveryManager->notifications()->count());
 
         $adminNotification = $admin->notifications()->first();
@@ -130,6 +139,28 @@ class CustomerOrderNotificationTest extends TestCase
         $this->assertSame('filament', $adminNotification->data['format']);
         $this->assertStringContainsString('New order WF-ORD-', $adminNotification->data['title']);
         $this->assertStringContainsString('Test Customer placed a customer order', $adminNotification->data['body']);
+
+        $order = Order::query()->latest('id')->firstOrFail();
+        $expectedRecipientIds = [$admin->id, $superAdmin->id, $deliveryManager->id];
+        sort($expectedRecipientIds);
+
+        Queue::assertPushed(SendFirebaseNotificationJob::class, function (SendFirebaseNotificationJob $job) use ($expectedRecipientIds, $order): bool {
+            $actualRecipientIds = $job->userIds;
+            sort($actualRecipientIds);
+
+            return $actualRecipientIds === $expectedRecipientIds
+                && $job->data['type'] === 'new_order'
+                && $job->data['screen'] === 'pending_orders'
+                && $job->data['order_id'] === (string) $order->id
+                && $job->data['order_no'] === $order->order_no;
+        });
+
+        Sanctum::actingAs($admin);
+
+        $this->getJson('/api/delivery-manager/pending-orders')
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.0.order_no', $order->order_no);
     }
 
     public function test_customer_order_responses_include_total_jar_quantity(): void

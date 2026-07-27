@@ -72,4 +72,38 @@ class DeliveryFcmTokenApiTest extends TestCase
             ->assertForbidden()
             ->assertJsonPath('success', false);
     }
+
+    public function test_admin_roles_can_login_and_register_delivery_app_fcm_tokens(): void
+    {
+        foreach (['admin', 'super_admin'] as $index => $role) {
+            $mobile = '0170000007'.($index + 1);
+            $user = User::factory()->create([
+                'role' => $role,
+                'mobile' => $mobile,
+            ]);
+
+            $this->postJson('/api/delivery/login', [
+                'mobile' => $mobile,
+                'password' => 'password',
+            ])
+                ->assertOk()
+                ->assertJsonPath('success', true)
+                ->assertJsonPath('data.user.role', $role);
+
+            Sanctum::actingAs($user);
+
+            $fcmToken = "{$role}-fcm-token";
+            $this->postJson('/api/delivery/save-fcm-token', [
+                'fcm_token' => $fcmToken,
+                'platform' => 'android',
+            ])
+                ->assertOk()
+                ->assertJsonPath('success', true);
+
+            $this->assertDatabaseHas('user_fcm_tokens', [
+                'user_id' => $user->id,
+                'token_hash' => UserFcmToken::hashToken($fcmToken),
+            ]);
+        }
+    }
 }
