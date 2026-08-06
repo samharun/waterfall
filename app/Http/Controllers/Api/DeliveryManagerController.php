@@ -57,15 +57,12 @@ class DeliveryManagerController extends Controller
 
         $staff = User::query()
             ->where('role', 'delivery_staff')
-            ->whereHas('assignedDeliveries', fn (Builder $query) => $query
-                ->whereIn('zone_id', $zoneIds)
-                ->where(fn (Builder $dateQuery) => $this->applyTodayFilter($dateQuery))
-            )
             ->with(['assignedDeliveries' => fn ($query) => $query
                 ->whereIn('zone_id', $zoneIds)
                 ->where(fn (Builder $dateQuery) => $this->applyTodayFilter($dateQuery))
                 ->with(['zone', 'order.items', 'payments']),
             ])
+            ->orderBy('name')
             ->get()
             ->map(function (User $user): array {
                 $deliveries = $user->assignedDeliveries;
@@ -126,6 +123,53 @@ class DeliveryManagerController extends Controller
             'Delivery Reassigned',
             'delivery_reassigned',
         );
+    }
+
+    public function updateStatus(Request $request): JsonResponse
+    {
+        if (! $this->isDeliveryManager($request->user())) {
+            return $this->forbiddenResponse();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'delivery_id' => ['required', 'integer', 'exists:deliveries,id'],
+            'status' => ['required', Rule::in(['delivered'])],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray());
+        }
+
+        $data = $validator->validated();
+        $delivery = Delivery::with($this->deliveryRelations())->find($data['delivery_id']);
+
+        if (! $delivery || ! in_array((int) $delivery->zone_id, $this->managedZoneIds($request->user()), true)) {
+            return $this->forbiddenResponse();
+        }
+
+        if (in_array($delivery->delivery_status, ['delivered', 'cancelled'], true)) {
+            return $this->errorResponse('This delivery can no longer be updated.', 422);
+        }
+
+        try {
+            $delivery->update([
+                'delivery_status' => $data['status'],
+                'delivered_at' => now(),
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('Manager delivery status update failed.', [
+                'delivery_id' => $delivery->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return $this->errorResponse('Server error. Please try again later.', 500);
+        }
+
+        $delivery->refresh()->load($this->deliveryRelations());
+
+        return $this->successResponse('Delivery marked as delivered successfully.', [
+            'delivery' => $this->deliveryPayload($delivery),
+        ]);
     }
 
     /**

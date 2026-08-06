@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -52,6 +53,84 @@ class DeliveryMobileOperationsApiTest extends TestCase
             'quantity' => 2,
             'created_by' => $staff->id,
         ]);
+    }
+
+    public function test_staff_progress_includes_available_staff_without_a_delivery_today(): void
+    {
+        $manager = User::factory()->create(['role' => 'delivery_manager']);
+        Zone::create([
+            'name' => 'Available Staff Zone',
+            'code' => 'AS-01',
+            'delivery_manager_id' => $manager->id,
+            'status' => 'active',
+        ]);
+        $availableStaff = User::factory()->create([
+            'name' => 'Available Delivery Staff',
+            'role' => 'delivery_staff',
+        ]);
+
+        Sanctum::actingAs($manager);
+
+        $this->getJson('/api/delivery-manager/staff-progress')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $availableStaff->id)
+            ->assertJsonPath('data.0.is_active', true)
+            ->assertJsonPath('data.0.assigned_count', 0)
+            ->assertJsonPath('data.0.pending_count', 0);
+    }
+
+    public function test_delivery_staff_can_mark_an_assigned_pending_delivery_as_delivered(): void
+    {
+        [$delivery, $staff] = $this->createPendingDelivery();
+
+        Sanctum::actingAs($staff);
+
+        $this->postJson('/api/delivery/update-status', [
+            'delivery_id' => $delivery->id,
+            'status' => 'delivered',
+            'delivered_jar_quantity' => 1,
+            'empty_jar_return' => 0,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.delivery.status', 'delivered');
+
+        $this->assertDatabaseHas('deliveries', [
+            'id' => $delivery->id,
+            'delivery_status' => 'delivered',
+        ]);
+    }
+
+    public function test_manager_admin_and_super_admin_can_mark_pending_deliveries_as_delivered(): void
+    {
+        $deliveryManager = User::factory()->create(['role' => 'delivery_manager']);
+        [$delivery] = $this->createPendingDelivery($deliveryManager);
+        $actors = [
+            $deliveryManager,
+            User::factory()->create(['role' => 'admin']),
+            User::factory()->create(['role' => 'super_admin']),
+        ];
+
+        foreach ($actors as $manager) {
+            $delivery->refresh()->updateQuietly([
+                'delivery_status' => 'pending',
+                'delivered_at' => null,
+            ]);
+            $delivery->order()->update(['order_status' => 'confirmed']);
+
+            Sanctum::actingAs($manager);
+
+            $this->postJson('/api/delivery-manager/update-status', [
+                'delivery_id' => $delivery->id,
+                'status' => 'delivered',
+            ])
+                ->assertOk()
+                ->assertJsonPath('data.delivery.status', 'delivered');
+
+            $this->assertDatabaseHas('deliveries', [
+                'id' => $delivery->id,
+                'delivery_status' => 'delivered',
+            ]);
+        }
     }
 
     public function test_manager_can_search_and_create_a_pending_customer_order_in_managed_zone(): void
@@ -126,5 +205,37 @@ class DeliveryMobileOperationsApiTest extends TestCase
         ]);
 
         return [$customer, $product];
+    }
+
+    /**
+     * @return array{Delivery, User}
+     */
+    private function createPendingDelivery(?User $manager = null): array
+    {
+        $staff = User::factory()->create(['role' => 'delivery_staff']);
+        [$customer] = $this->createCustomerAndProduct($manager);
+        $order = Order::create([
+            'order_type' => 'customer',
+            'customer_id' => $customer->id,
+            'zone_id' => $customer->zone_id,
+            'preferred_delivery_slot' => 'morning',
+            'order_date' => today()->toDateString(),
+            'subtotal' => 120,
+            'discount' => 0,
+            'delivery_charge' => 0,
+            'total_amount' => 120,
+            'payment_status' => 'unpaid',
+            'order_status' => 'confirmed',
+        ]);
+        $delivery = Delivery::create([
+            'order_id' => $order->id,
+            'zone_id' => $customer->zone_id,
+            'delivery_staff_id' => $staff->id,
+            'assigned_by' => $manager?->id,
+            'assigned_at' => now(),
+            'delivery_status' => 'pending',
+        ]);
+
+        return [$delivery, $staff];
     }
 }

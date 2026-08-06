@@ -68,6 +68,7 @@ Route::prefix('delivery-manager')
         Route::get('/today-deliveries', [DeliveryManagerController::class, 'todayDeliveries']);
         Route::post('/assign', [DeliveryManagerController::class, 'assign']);
         Route::post('/reassign', [DeliveryManagerController::class, 'reassign']);
+        Route::post('/update-status', [DeliveryManagerController::class, 'updateStatus']);
         Route::get('/pending-orders', [DeliveryManagerController::class, 'pendingOrders']);
         Route::post('/confirm-order', [DeliveryManagerController::class, 'confirmOrder']);
         Route::get('/search-customers', [DeliveryManagerController::class, 'searchCustomers']);
