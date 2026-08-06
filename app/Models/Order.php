@@ -184,6 +184,11 @@ class Order extends Model
         return $this->hasMany(Delivery::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(CustomerSubscription::class, 'subscription_id');
