@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Payment;
@@ -18,6 +19,8 @@ use Illuminate\Support\Collection;
  */
 class RecentActivityWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 10;
 
     protected string $view = 'filament.admin.widgets.recent-activity';
@@ -47,28 +50,28 @@ class RecentActivityWidget extends Widget
                 : $order?->customer;
 
             $statusColors = [
-                'delivered'            => ['bg' => '#f0fdf4', 'dot' => '#16a34a', 'text' => '#15803d'],
-                'assigned'             => ['bg' => '#eff6ff', 'dot' => '#3b82f6', 'text' => '#1d4ed8'],
-                'in_progress'          => ['bg' => '#eff6ff', 'dot' => '#2563eb', 'text' => '#1e40af'],
-                'failed'               => ['bg' => '#fef2f2', 'dot' => '#dc2626', 'text' => '#b91c1c'],
-                'not_delivered'        => ['bg' => '#fef2f2', 'dot' => '#dc2626', 'text' => '#b91c1c'],
+                'delivered' => ['bg' => '#f0fdf4', 'dot' => '#16a34a', 'text' => '#15803d'],
+                'assigned' => ['bg' => '#eff6ff', 'dot' => '#3b82f6', 'text' => '#1d4ed8'],
+                'in_progress' => ['bg' => '#eff6ff', 'dot' => '#2563eb', 'text' => '#1e40af'],
+                'failed' => ['bg' => '#fef2f2', 'dot' => '#dc2626', 'text' => '#b91c1c'],
+                'not_delivered' => ['bg' => '#fef2f2', 'dot' => '#dc2626', 'text' => '#b91c1c'],
                 'customer_unavailable' => ['bg' => '#fff7ed', 'dot' => '#f97316', 'text' => '#9a3412'],
-                'partial_delivered'    => ['bg' => '#fff7ed', 'dot' => '#f59e0b', 'text' => '#92400e'],
-                'cancelled'            => ['bg' => '#f9fafb', 'dot' => '#9ca3af', 'text' => '#6b7280'],
-                'pending'              => ['bg' => '#f9fafb', 'dot' => '#9ca3af', 'text' => '#6b7280'],
+                'partial_delivered' => ['bg' => '#fff7ed', 'dot' => '#f59e0b', 'text' => '#92400e'],
+                'cancelled' => ['bg' => '#f9fafb', 'dot' => '#9ca3af', 'text' => '#6b7280'],
+                'pending' => ['bg' => '#f9fafb', 'dot' => '#9ca3af', 'text' => '#6b7280'],
             ];
 
             $colors = $statusColors[$delivery->delivery_status] ?? $statusColors['pending'];
 
             $activities->push([
-                'type'       => 'delivery',
-                'icon'       => 'truck',
-                'title'      => $party?->name ?? 'Unknown',
-                'subtitle'   => ucwords(str_replace('_', ' ', $delivery->delivery_status))
-                    . ($delivery->deliveryStaff ? ' · ' . $delivery->deliveryStaff->name : ''),
-                'meta'       => $delivery->delivery_no,
-                'time'       => $delivery->updated_at,
-                'colors'     => $colors,
+                'type' => 'delivery',
+                'icon' => 'truck',
+                'title' => $party?->name ?? 'Unknown',
+                'subtitle' => ucwords(str_replace('_', ' ', $delivery->delivery_status))
+                    .($delivery->deliveryStaff ? ' · '.$delivery->deliveryStaff->name : ''),
+                'meta' => $delivery->delivery_no,
+                'time' => $delivery->updated_at,
+                'colors' => $colors,
             ]);
         }
 
@@ -76,13 +79,13 @@ class RecentActivityWidget extends Widget
         $customers = Customer::orderByDesc('created_at')->limit(5)->get();
         foreach ($customers as $customer) {
             $activities->push([
-                'type'     => 'customer',
-                'icon'     => 'user',
-                'title'    => $customer->name,
-                'subtitle' => 'New customer registered · ' . ucfirst($customer->approval_status),
-                'meta'     => $customer->customer_id,
-                'time'     => $customer->created_at,
-                'colors'   => ['bg' => '#f5f3ff', 'dot' => '#7c3aed', 'text' => '#5b21b6'],
+                'type' => 'customer',
+                'icon' => 'user',
+                'title' => $customer->name,
+                'subtitle' => 'New customer registered · '.ucfirst($customer->approval_status),
+                'meta' => $customer->customer_id,
+                'time' => $customer->created_at,
+                'colors' => ['bg' => '#f5f3ff', 'dot' => '#7c3aed', 'text' => '#5b21b6'],
             ]);
         }
 
@@ -95,14 +98,14 @@ class RecentActivityWidget extends Widget
         foreach ($payments as $payment) {
             $party = $payment->customer ?? $payment->dealer;
             $activities->push([
-                'type'     => 'payment',
-                'icon'     => 'cash',
-                'title'    => $party?->name ?? 'Unknown',
-                'subtitle' => '৳ ' . number_format((float) $payment->amount, 2)
-                    . ' · ' . ucfirst($payment->payment_method ?? 'cash'),
-                'meta'     => $payment->payment_no,
-                'time'     => $payment->created_at,
-                'colors'   => ['bg' => '#ecfdf5', 'dot' => '#059669', 'text' => '#065f46'],
+                'type' => 'payment',
+                'icon' => 'cash',
+                'title' => $party?->name ?? 'Unknown',
+                'subtitle' => '৳ '.number_format((float) $payment->amount, 2)
+                    .' · '.ucfirst($payment->payment_method ?? 'cash'),
+                'meta' => $payment->payment_no,
+                'time' => $payment->created_at,
+                'colors' => ['bg' => '#ecfdf5', 'dot' => '#059669', 'text' => '#065f46'],
             ]);
         }
 

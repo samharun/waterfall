@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Delivery;
 use App\Models\Payment;
 use App\Models\Zone;
@@ -17,6 +18,10 @@ use Illuminate\Support\Collection;
  */
 class ZoneDeliverySummaryWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
+    protected int|string|array $columnSpan = 'full';
+
     protected static ?int $sort = 5;
 
     protected string $view = 'filament.admin.widgets.zone-delivery-summary';
@@ -55,12 +60,12 @@ class ZoneDeliverySummaryWidget extends Widget
                 ->whereDate('assigned_at', $today)
                 ->get();
 
-            $total      = $deliveries->count();
-            $delivered  = $deliveries->where('delivery_status', 'delivered')->count();
-            $pending    = $deliveries->whereIn('delivery_status', [
+            $total = $deliveries->count();
+            $delivered = $deliveries->where('delivery_status', 'delivered')->count();
+            $pending = $deliveries->whereIn('delivery_status', [
                 'pending', 'assigned', 'in_progress',
             ])->count();
-            $failed     = $deliveries->whereIn('delivery_status', [
+            $failed = $deliveries->whereIn('delivery_status', [
                 'failed', 'not_delivered', 'customer_unavailable', 'partial_delivered',
             ])->count();
             $unassigned = $deliveries->whereNull('delivery_staff_id')
@@ -86,19 +91,19 @@ class ZoneDeliverySummaryWidget extends Widget
                 : 0;
 
             return [
-                'zone_id'        => $zone->id,
-                'zone_name'      => $zone->name,
-                'zone_code'      => $zone->code,
-                'manager'        => $zone->deliveryManager?->name ?? '—',
-                'total'          => $total,
-                'delivered'      => $delivered,
-                'pending'        => $pending,
-                'failed'         => $failed,
-                'unassigned'     => $unassigned,
-                'active_staff'   => $activeStaff,
-                'collection'     => (float) $collection,
+                'zone_id' => $zone->id,
+                'zone_name' => $zone->name,
+                'zone_code' => $zone->code,
+                'manager' => $zone->deliveryManager?->name ?? '—',
+                'total' => $total,
+                'delivered' => $delivered,
+                'pending' => $pending,
+                'failed' => $failed,
+                'unassigned' => $unassigned,
+                'active_staff' => $activeStaff,
+                'collection' => (float) $collection,
                 'completion_pct' => $completionPct,
-                'status_color'   => $completionPct >= 80 ? 'success'
+                'status_color' => $completionPct >= 80 ? 'success'
                     : ($completionPct >= 40 ? 'warning' : 'danger'),
             ];
         })->sortByDesc('completion_pct')->values();

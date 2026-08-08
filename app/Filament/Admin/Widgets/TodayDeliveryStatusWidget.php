@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Delivery;
 use App\Models\Payment;
 use Filament\Widgets\Widget;
@@ -15,7 +16,11 @@ use Illuminate\Support\Carbon;
  */
 class TodayDeliveryStatusWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 3;
+
+    protected int|string|array $columnSpan = 'full';
 
     protected string $view = 'filament.admin.widgets.today-delivery-status';
 
@@ -37,15 +42,15 @@ class TodayDeliveryStatusWidget extends Widget
         // All deliveries assigned today (regardless of current status)
         $base = Delivery::whereDate('assigned_at', $today);
 
-        $total       = (clone $base)->count();
-        $pending     = (clone $base)->where('delivery_status', 'pending')->count();
-        $assigned    = (clone $base)->where('delivery_status', 'assigned')->count();
-        $inProgress  = (clone $base)->where('delivery_status', 'in_progress')->count();
-        $delivered   = (clone $base)->where('delivery_status', 'delivered')->count();
-        $failed      = (clone $base)->whereIn('delivery_status', [
+        $total = (clone $base)->count();
+        $pending = (clone $base)->where('delivery_status', 'pending')->count();
+        $assigned = (clone $base)->where('delivery_status', 'assigned')->count();
+        $inProgress = (clone $base)->where('delivery_status', 'in_progress')->count();
+        $delivered = (clone $base)->where('delivery_status', 'delivered')->count();
+        $failed = (clone $base)->whereIn('delivery_status', [
             'failed', 'not_delivered', 'customer_unavailable', 'partial_delivered',
         ])->count();
-        $cancelled   = (clone $base)->where('delivery_status', 'cancelled')->count();
+        $cancelled = (clone $base)->where('delivery_status', 'cancelled')->count();
 
         // Unassigned: created today but no staff assigned yet
         $unassigned = Delivery::whereDate('created_at', $today)
@@ -64,17 +69,17 @@ class TodayDeliveryStatusWidget extends Widget
             : 0;
 
         return [
-            'total'           => $total,
-            'pending'         => $pending,
-            'assigned'        => $assigned,
-            'in_progress'     => $inProgress,
-            'delivered'       => $delivered,
-            'failed'          => $failed,
-            'cancelled'       => $cancelled,
-            'unassigned'      => $unassigned,
-            'completion_pct'  => $completionPct,
-            'today_collection'=> (float) $todayCollection,
-            'date_label'      => Carbon::today()->format('l, d M Y'),
+            'total' => $total,
+            'pending' => $pending,
+            'assigned' => $assigned,
+            'in_progress' => $inProgress,
+            'delivered' => $delivered,
+            'failed' => $failed,
+            'cancelled' => $cancelled,
+            'unassigned' => $unassigned,
+            'completion_pct' => $completionPct,
+            'today_collection' => (float) $todayCollection,
+            'date_label' => Carbon::today()->format('l, d M Y'),
         ];
     }
 }

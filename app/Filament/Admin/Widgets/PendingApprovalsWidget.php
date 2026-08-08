@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Customer;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class PendingApprovalsWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 6;
 
     protected string $view = 'filament.admin.widgets.pending-approvals';
@@ -24,6 +27,7 @@ class PendingApprovalsWidget extends Widget
     public static function canView(): bool
     {
         $user = auth()->user();
+
         return $user?->can('customers.view') && $user?->can('customers.approve');
     }
 
@@ -55,13 +59,14 @@ class PendingApprovalsWidget extends Widget
                 ->body('Customer must have a zone and address before approval.')
                 ->warning()
                 ->send();
+
             return;
         }
 
         $customer->update([
             'approval_status' => 'approved',
-            'approved_by'     => Auth::id(),
-            'approved_at'     => now(),
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
         ]);
 
         Notification::make()

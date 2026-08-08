@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Delivery;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
@@ -14,6 +15,8 @@ use Illuminate\Support\Carbon;
  */
 class DeliveryCompletionChartWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 11;
 
     protected string $view = 'filament.admin.widgets.delivery-completion-chart';
@@ -28,33 +31,33 @@ class DeliveryCompletionChartWidget extends Widget
     public function getChartData(): array
     {
         $days = collect(range(13, 0))->map(function ($daysAgo) {
-            $date  = Carbon::today()->subDays($daysAgo);
+            $date = Carbon::today()->subDays($daysAgo);
             $total = Delivery::whereDate('assigned_at', $date)->count();
-            $done  = Delivery::whereDate('assigned_at', $date)
+            $done = Delivery::whereDate('assigned_at', $date)
                 ->where('delivery_status', 'delivered')
                 ->count();
-            $pct   = $total > 0 ? round(($done / $total) * 100) : 0;
+            $pct = $total > 0 ? round(($done / $total) * 100) : 0;
 
             return [
-                'label'   => $date->format('d/m'),
-                'day'     => $date->format('D'),
-                'total'   => $total,
-                'done'    => $done,
-                'failed'  => Delivery::whereDate('assigned_at', $date)
+                'label' => $date->format('d/m'),
+                'day' => $date->format('D'),
+                'total' => $total,
+                'done' => $done,
+                'failed' => Delivery::whereDate('assigned_at', $date)
                     ->whereIn('delivery_status', ['failed', 'not_delivered', 'customer_unavailable'])
                     ->count(),
-                'pct'     => $pct,
-                'is_today'=> $daysAgo === 0,
+                'pct' => $pct,
+                'is_today' => $daysAgo === 0,
             ];
         });
 
         $avgPct = $days->where('total', '>', 0)->avg('pct') ?? 0;
 
         return [
-            'days'    => $days,
+            'days' => $days,
             'avg_pct' => round($avgPct, 1),
             'total_delivered_period' => $days->sum('done'),
-            'total_assigned_period'  => $days->sum('total'),
+            'total_assigned_period' => $days->sum('total'),
         ];
     }
 }

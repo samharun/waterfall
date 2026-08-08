@@ -3,21 +3,25 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Admin\Pages\Auth\Login;
+use App\Filament\Admin\Pages\Dashboard;
 use App\Filament\Admin\Widgets\DeliveryCompletionChartWidget;
 use App\Filament\Admin\Widgets\DeliveryStaffActivityWidget;
 use App\Filament\Admin\Widgets\JarDepositTrackerWidget;
+use App\Filament\Admin\Widgets\OperationsStatsWidget;
+use App\Filament\Admin\Widgets\OverviewStatsWidget;
 use App\Filament\Admin\Widgets\PendingApprovalsWidget;
 use App\Filament\Admin\Widgets\RecentActivityWidget;
 use App\Filament\Admin\Widgets\TodayCollectionSummaryWidget;
 use App\Filament\Admin\Widgets\TodayDeliveryStatusWidget;
 use App\Filament\Admin\Widgets\UnassignedDeliveriesWidget;
 use App\Filament\Admin\Widgets\ZoneDeliverySummaryWidget;
+use App\Http\Middleware\EnsureBackOfficeAccess;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -41,6 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('WaterFall')
             ->login(Login::class)
+            ->darkMode(false)
+            ->defaultThemeMode(ThemeMode::Light)
             ->colors([
                 'primary' => Color::Indigo,
             ])
@@ -93,6 +99,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([
+                OverviewStatsWidget::class,
+                OperationsStatsWidget::class,
                 TodayDeliveryStatusWidget::class,
                 DeliveryStaffActivityWidget::class,
                 ZoneDeliverySummaryWidget::class,
@@ -116,7 +124,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                \App\Http\Middleware\EnsureBackOfficeAccess::class,
+                EnsureBackOfficeAccess::class,
             ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Customer;
 use App\Models\JarDeposit;
 use Filament\Widgets\Widget;
@@ -15,6 +16,8 @@ use Illuminate\Support\Carbon;
  */
 class JarDepositTrackerWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 9;
 
     protected string $view = 'filament.admin.widgets.jar-deposit-tracker';
@@ -35,7 +38,7 @@ class JarDepositTrackerWidget extends Widget
 
         // Total jars with dealers — calculated from jar_deposit transactions
         // (dealers table may not have jar_deposit_qty column)
-        $dealerIssued   = (int) JarDeposit::where('party_type', 'dealer')
+        $dealerIssued = (int) JarDeposit::where('party_type', 'dealer')
             ->whereIn('transaction_type', ['jar_issued', 'deposit_received'])
             ->sum('quantity');
         $dealerReturned = (int) JarDeposit::where('party_type', 'dealer')
@@ -46,7 +49,7 @@ class JarDepositTrackerWidget extends Widget
         $totalJarsOut = $totalCustomerJars + $totalDealerJars;
 
         // Today's movements
-        $issuedToday   = (int) JarDeposit::whereDate('transaction_date', $today)
+        $issuedToday = (int) JarDeposit::whereDate('transaction_date', $today)
             ->where('transaction_type', 'jar_issued')
             ->sum('quantity');
 
@@ -59,9 +62,10 @@ class JarDepositTrackerWidget extends Widget
         // Last 7 days movements
         $last7Days = collect(range(6, 0))->map(function ($daysAgo) {
             $date = Carbon::today()->subDays($daysAgo);
+
             return [
-                'label'    => $date->format('D'),
-                'issued'   => (int) JarDeposit::whereDate('transaction_date', $date)
+                'label' => $date->format('D'),
+                'issued' => (int) JarDeposit::whereDate('transaction_date', $date)
                     ->where('transaction_type', 'jar_issued')->sum('quantity'),
                 'returned' => (int) JarDeposit::whereDate('transaction_date', $date)
                     ->where('transaction_type', 'jar_returned')->sum('quantity'),
@@ -75,14 +79,14 @@ class JarDepositTrackerWidget extends Widget
             ->get(['id', 'name', 'customer_id', 'jar_deposit_qty']);
 
         return [
-            'total_jars_out'     => $totalJarsOut,
-            'customer_jars'      => $totalCustomerJars,
-            'dealer_jars'        => $totalDealerJars,
-            'issued_today'       => $issuedToday,
-            'returned_today'     => $returnedToday,
-            'net_movement'       => $netMovement,
-            'last_7_days'        => $last7Days,
-            'top_customers'      => $topCustomers,
+            'total_jars_out' => $totalJarsOut,
+            'customer_jars' => $totalCustomerJars,
+            'dealer_jars' => $totalDealerJars,
+            'issued_today' => $issuedToday,
+            'returned_today' => $returnedToday,
+            'net_movement' => $netMovement,
+            'last_7_days' => $last7Days,
+            'top_customers' => $topCustomers,
         ];
     }
 }

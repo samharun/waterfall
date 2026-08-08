@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Delivery;
 use App\Models\Payment;
 use App\Models\Zone;
@@ -17,6 +18,8 @@ use Illuminate\Support\Collection;
  */
 class TodayCollectionSummaryWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 7;
 
     protected string $view = 'filament.admin.widgets.today-collection-summary';
@@ -39,13 +42,13 @@ class TodayCollectionSummaryWidget extends Widget
             ->where('collection_status', 'accepted')
             ->get();
 
-        $totalCollected  = (float) $payments->sum('amount');
-        $totalCount      = $payments->count();
+        $totalCollected = (float) $payments->sum('amount');
+        $totalCount = $payments->count();
 
         // By payment method
         $byMethod = $payments->groupBy('payment_method')
             ->map(fn ($group) => [
-                'count'  => $group->count(),
+                'count' => $group->count(),
                 'amount' => (float) $group->sum('amount'),
             ])
             ->sortByDesc('amount')
@@ -54,8 +57,8 @@ class TodayCollectionSummaryWidget extends Widget
         // By zone
         $byZone = $payments->groupBy(fn ($p) => $p->delivery?->zone?->name ?? 'Unknown')
             ->map(fn ($group, $zoneName) => [
-                'zone'   => $zoneName,
-                'count'  => $group->count(),
+                'zone' => $zoneName,
+                'count' => $group->count(),
                 'amount' => (float) $group->sum('amount'),
             ])
             ->sortByDesc('amount')
@@ -68,21 +71,21 @@ class TodayCollectionSummaryWidget extends Widget
             ->sum('amount');
 
         return [
-            'total_collected'  => $totalCollected,
-            'total_count'      => $totalCount,
-            'pending_review'   => (float) $pendingReview,
-            'by_method'        => $byMethod,
-            'by_zone'          => $byZone,
-            'date_label'       => Carbon::today()->format('d M Y'),
+            'total_collected' => $totalCollected,
+            'total_count' => $totalCount,
+            'pending_review' => (float) $pendingReview,
+            'by_method' => $byMethod,
+            'by_zone' => $byZone,
+            'date_label' => Carbon::today()->format('d M Y'),
         ];
     }
 
     private static array $methodLabels = [
-        'cash'  => 'Cash',
+        'cash' => 'Cash',
         'bkash' => 'bKash',
         'nagad' => 'Nagad',
-        'bank'  => 'Bank',
-        'card'  => 'Card',
+        'bank' => 'Bank',
+        'card' => 'Card',
         'other' => 'Other',
     ];
 

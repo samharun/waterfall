@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Customer;
 use App\Models\Dealer;
 use App\Models\Order;
@@ -12,7 +13,17 @@ use Illuminate\Support\Carbon;
 
 class OverviewStatsWidget extends StatsOverviewWidget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 1;
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected ?string $pollingInterval = '60s';
+
+    protected ?string $heading = 'Business snapshot';
+
+    protected ?string $description = 'Customers, orders, and sales at a glance';
 
     protected static bool $isDiscovered = false;
 
@@ -23,11 +34,11 @@ class OverviewStatsWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $activeCustomers  = Customer::where('approval_status', 'approved')->count();
+        $activeCustomers = Customer::where('approval_status', 'approved')->count();
         $pendingCustomers = Customer::where('approval_status', 'pending')->count();
-        $approvedDealers  = Dealer::where('approval_status', 'approved')->count();
-        $todayOrders      = Order::whereDate('order_date', today())->count();
-        $todayDelivered   = Order::whereDate('order_date', today())
+        $approvedDealers = Dealer::where('approval_status', 'approved')->count();
+        $todayOrders = Order::whereDate('order_date', today())->count();
+        $todayDelivered = Order::whereDate('order_date', today())
             ->where('order_status', 'delivered')->count();
 
         $monthSales = Payment::whereMonth('payment_date', now()->month)
@@ -60,7 +71,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
                 ->icon('heroicon-o-check-badge')
                 ->color('success'),
 
-            Stat::make('This Month Sales', '৳ ' . number_format((float) $monthSales, 2))
+            Stat::make('This Month Sales', '৳ '.number_format((float) $monthSales, 2))
                 ->description(Carbon::now()->format('F Y'))
                 ->icon('heroicon-o-banknotes')
                 ->color('success'),

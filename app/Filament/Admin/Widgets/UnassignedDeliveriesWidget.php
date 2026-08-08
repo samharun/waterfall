@@ -2,11 +2,10 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Delivery;
 use App\Models\User;
-use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -17,6 +16,8 @@ use Illuminate\Support\Collection;
  */
 class UnassignedDeliveriesWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 8;
 
     protected string $view = 'filament.admin.widgets.unassigned-deliveries';
@@ -43,14 +44,14 @@ class UnassignedDeliveriesWidget extends Widget
                     : $order?->customer;
 
                 return [
-                    'id'           => $delivery->id,
-                    'delivery_no'  => $delivery->delivery_no,
-                    'party_name'   => $party?->name ?? '—',
+                    'id' => $delivery->id,
+                    'delivery_no' => $delivery->delivery_no,
+                    'party_name' => $party?->name ?? '—',
                     'party_mobile' => $party?->mobile ?? '—',
-                    'zone'         => $delivery->zone?->name ?? '—',
-                    'status'       => $delivery->delivery_status,
-                    'created_at'   => $delivery->created_at?->diffForHumans() ?? '—',
-                    'order_type'   => $order?->order_type ?? '—',
+                    'zone' => $delivery->zone?->name ?? '—',
+                    'status' => $delivery->delivery_status,
+                    'created_at' => $delivery->created_at?->diffForHumans() ?? '—',
+                    'order_type' => $order?->order_type ?? '—',
                 ];
             });
     }

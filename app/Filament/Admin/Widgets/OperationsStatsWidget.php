@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Customer;
 use App\Models\Dealer;
 use App\Models\Delivery;
@@ -11,7 +12,17 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class OperationsStatsWidget extends StatsOverviewWidget
 {
+    use RefreshesWithDashboard;
+
     protected static ?int $sort = 2;
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected ?string $pollingInterval = '60s';
+
+    protected ?string $heading = 'Attention required';
+
+    protected ?string $description = 'Operational items that may need action';
 
     protected static bool $isDiscovered = false;
 
@@ -26,7 +37,7 @@ class OperationsStatsWidget extends StatsOverviewWidget
             ->count();
 
         $totalCustomerDue = Customer::sum('current_due');
-        $totalDealerDue   = Dealer::sum('current_due');
+        $totalDealerDue = Dealer::sum('current_due');
 
         $lowStockCount = Product::where('status', 'active')
             ->whereColumn('current_stock', '<=', 'stock_alert_qty')
@@ -40,12 +51,12 @@ class OperationsStatsWidget extends StatsOverviewWidget
                 ->icon('heroicon-o-truck')
                 ->color($pendingDeliveries > 0 ? 'warning' : 'success'),
 
-            Stat::make('Customer Due', '৳ ' . number_format((float) $totalCustomerDue, 2))
+            Stat::make('Customer Due', '৳ '.number_format((float) $totalCustomerDue, 2))
                 ->description('Total outstanding customer dues')
                 ->icon('heroicon-o-exclamation-circle')
                 ->color((float) $totalCustomerDue > 0 ? 'danger' : 'success'),
 
-            Stat::make('Dealer Due', '৳ ' . number_format((float) $totalDealerDue, 2))
+            Stat::make('Dealer Due', '৳ '.number_format((float) $totalDealerDue, 2))
                 ->description('Total outstanding dealer dues')
                 ->icon('heroicon-o-exclamation-triangle')
                 ->color((float) $totalDealerDue > 0 ? 'danger' : 'success'),

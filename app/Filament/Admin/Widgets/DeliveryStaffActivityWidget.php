@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Widgets\Concerns\RefreshesWithDashboard;
 use App\Models\Delivery;
 use App\Models\Payment;
 use App\Models\User;
@@ -18,6 +19,10 @@ use Illuminate\Support\Collection;
  */
 class DeliveryStaffActivityWidget extends Widget
 {
+    use RefreshesWithDashboard;
+
+    protected int|string|array $columnSpan = 'full';
+
     protected static ?int $sort = 4;
 
     protected string $view = 'filament.admin.widgets.delivery-staff-activity';
@@ -56,20 +61,22 @@ class DeliveryStaffActivityWidget extends Widget
                 ->whereDate('assigned_at', $today)
                 ->get();
 
-            $assigned   = $deliveries->count();
-            $delivered  = $deliveries->where('delivery_status', 'delivered')->count();
+            $assigned = $deliveries->count();
+            $delivered = $deliveries->where('delivery_status', 'delivered')->count();
             $inProgress = $deliveries->whereIn('delivery_status', ['assigned', 'in_progress'])->count();
-            $failed     = $deliveries->whereIn('delivery_status', [
+            $failed = $deliveries->whereIn('delivery_status', [
                 'failed', 'not_delivered', 'customer_unavailable', 'partial_delivered',
             ])->count();
 
             // Cash collected by this staff today
-            $collected = Payment::where('collected_from_staff_id', $user->id)
-                ->orWhere(function ($q) use ($user, $today) {
-                    $q->where('collection_source', 'delivery_staff')
-                      ->whereDate('payment_date', $today)
-                      ->whereHas('delivery', fn ($d) => $d->where('delivery_staff_id', $user->id));
-                })
+            $collected = Payment::where(function ($query) use ($user, $today) {
+                $query->where('collected_from_staff_id', $user->id)
+                    ->orWhere(function ($deliveryQuery) use ($user, $today) {
+                        $deliveryQuery->where('collection_source', 'delivery_staff')
+                            ->whereDate('payment_date', $today)
+                            ->whereHas('delivery', fn ($delivery) => $delivery->where('delivery_staff_id', $user->id));
+                    });
+            })
                 ->whereDate('payment_date', $today)
                 ->where('collection_status', 'accepted')
                 ->sum('amount');
@@ -79,16 +86,16 @@ class DeliveryStaffActivityWidget extends Widget
                 : 0;
 
             return [
-                'id'             => $user->id,
-                'name'           => $user->name,
-                'mobile'         => $user->mobile ?? '—',
-                'assigned'       => $assigned,
-                'delivered'      => $delivered,
-                'in_progress'    => $inProgress,
-                'failed'         => $failed,
-                'collected'      => (float) $collected,
+                'id' => $user->id,
+                'name' => $user->name,
+                'mobile' => $user->mobile ?? '—',
+                'assigned' => $assigned,
+                'delivered' => $delivered,
+                'in_progress' => $inProgress,
+                'failed' => $failed,
+                'collected' => (float) $collected,
                 'completion_pct' => $completionPct,
-                'status_color'   => $completionPct >= 80 ? 'success'
+                'status_color' => $completionPct >= 80 ? 'success'
                     : ($completionPct >= 40 ? 'warning' : 'danger'),
             ];
         })->sortByDesc('completion_pct')->values();

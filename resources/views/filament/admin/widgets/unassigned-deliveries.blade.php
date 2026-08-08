@@ -3,7 +3,7 @@
     $totalUnassigned = $this->getTotalUnassigned();
 @endphp
 
-<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+<div class="wf-dashboard-card" wire:poll.30s wire:loading.class="wf-dashboard-card--loading" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)">
 
     {{-- Header --}}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f3f4f6;background:#f9fafb">
