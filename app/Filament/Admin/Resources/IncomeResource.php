@@ -34,6 +34,21 @@ class IncomeResource extends Resource
     protected static ?string $navigationLabel = 'Income';
     protected static ?int $navigationSort = 2;
 
+    public static function canEdit($record): bool
+    {
+        return ! $record?->payment_id && (auth()->user()?->can(static::$editPermission) ?? false);
+    }
+
+    public static function canDelete($record): bool
+    {
+        return ! $record?->payment_id && (auth()->user()?->can(static::$deletePermission) ?? false);
+    }
+
+    public static function canRestore(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return ! $record->payment_id && parent::canRestore($record);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -71,7 +86,7 @@ class IncomeResource extends Resource
                     Actions\ViewAction::make(),
                     Actions\EditAction::make(),
                     Actions\DeleteAction::make()->using(fn (AccountTransaction $record) => app(AccountTransactionService::class)->deleteTransaction($record)),
-                    Actions\RestoreAction::make(),
+                    Actions\RestoreAction::make()->using(fn (AccountTransaction $record) => app(AccountTransactionService::class)->restoreTransaction($record)),
                 ]),
             ])
             ->defaultSort('transaction_date', 'desc');

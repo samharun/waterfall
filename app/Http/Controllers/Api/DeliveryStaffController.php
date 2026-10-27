@@ -413,7 +413,7 @@ class DeliveryStaffController extends Controller
             'jar_quantity' => $this->jarQuantity($delivery),
             'empty_jar_return' => 0,
             'payable_amount' => (float) ($order?->total_amount ?? 0),
-            'paid_amount' => (float) $delivery->payments->sum('amount'),
+            'paid_amount' => (float) $delivery->payments->where('collection_status', 'accepted')->sum('amount'),
             'due_amount' => $this->dueAmount($delivery),
             'preferred_time' => $this->preferredTime($delivery),
             'status' => $this->mobileStatus($delivery->delivery_status),
@@ -431,7 +431,7 @@ class DeliveryStaffController extends Controller
     private function dueAmount(Delivery $delivery): float
     {
         $total = (float) ($delivery->order?->total_amount ?? 0);
-        $paid = (float) $delivery->payments->sum('amount');
+        $paid = (float) $delivery->payments->where('collection_status', 'accepted')->sum('amount');
 
         return max(0, $total - $paid);
     }

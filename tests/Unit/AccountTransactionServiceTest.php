@@ -13,6 +13,34 @@ class AccountTransactionServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_approving_pending_expense_checks_current_balance(): void
+    {
+        $account = PaymentAccount::create(['name' => 'Cash', 'type' => 'cash', 'current_balance' => 10]);
+        $service = app(AccountTransactionService::class);
+        $expense = $service->createExpense(['payment_account_id' => $account->id, 'amount' => 20, 'status' => 'pending']);
+        try {
+            $service->approveTransaction($expense);
+            $this->fail('Approval must not overdraw the account.');
+        } catch (ValidationException) {
+            $this->assertSame('pending', $expense->refresh()->status);
+            $this->assertSame('10.00', $account->refresh()->current_balance);
+        }
+    }
+
+    public function test_partial_update_preserves_amount_and_restore_reapplies_balance_once(): void
+    {
+        $account = PaymentAccount::create(['name' => 'Cash', 'type' => 'cash', 'current_balance' => 100]);
+        $service = app(AccountTransactionService::class);
+        $income = $service->createIncome(['payment_account_id' => $account->id, 'amount' => 20]);
+        $income = $service->updateTransaction($income, ['description' => 'Reviewed']);
+        $this->assertSame('20.00', $income->amount);
+        $service->deleteTransaction($income);
+        $this->assertSame('100.00', $account->refresh()->current_balance);
+        $service->restoreTransaction($income);
+        $service->restoreTransaction($income);
+        $this->assertSame('120.00', $account->refresh()->current_balance);
+    }
+
     public function test_approved_income_and_expense_update_payment_account_balance(): void
     {
         $account = PaymentAccount::create([

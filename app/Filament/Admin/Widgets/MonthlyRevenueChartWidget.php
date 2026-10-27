@@ -33,7 +33,7 @@ class MonthlyRevenueChartWidget extends ChartWidget
         $months = collect(range(5, 0))->map(fn ($i) => Carbon::now()->startOfMonth()->subMonths($i));
         $labels = $months->map(fn ($m) => $m->format('M Y'))->toArray();
 
-        $totals = $months->map(fn ($m) => (float) Payment::whereYear('payment_date', $m->year)
+        $totals = $months->map(fn ($m) => (float) Payment::accepted()->whereYear('payment_date', $m->year)
             ->whereMonth('payment_date', $m->month)
             ->sum('amount')
         )->toArray();

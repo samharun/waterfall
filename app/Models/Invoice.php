@@ -181,7 +181,7 @@ class Invoice extends Model
      */
     public function syncFromPayments(): void
     {
-        $paid = (float) $this->payments()->sum('amount');
+        $paid = (float) $this->payments()->accepted()->sum('amount');
 
         $this->paid_amount = $paid;
         $this->recalculateTotals();

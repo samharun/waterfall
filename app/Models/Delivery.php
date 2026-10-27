@@ -177,12 +177,12 @@ class Delivery extends Model
 
     public function totalCollectedAmount(): float
     {
-        return (float) $this->payments()->sum('amount');
+        return (float) $this->payments()->accepted()->sum('amount');
     }
 
     public function hasPaymentCollection(): bool
     {
-        return $this->payments()->exists();
+        return $this->payments()->accepted()->exists();
     }
 
     // ── Scopes ─────────────────────────────────────────────────────

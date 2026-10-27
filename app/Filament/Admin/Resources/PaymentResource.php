@@ -133,6 +133,13 @@ class PaymentResource extends Resource
                             ->required()
                             ->minValue(0.01),
 
+                        Forms\Components\Select::make('payment_account_id')
+                            ->label('Deposit / cash account')
+                            ->options(fn () => \App\Models\PaymentAccount::active()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->nullable()
+                            ->helperText('Leave blank to use a collection holding account. Select the destination only when the money is received there.'),
+
                         Forms\Components\Select::make('payment_method')
                             ->label('Payment Method')
                             ->options(Payment::methodLabels())
@@ -163,6 +170,10 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('accountTransaction.paymentAccount.name')
+                    ->label('Posted account')->placeholder('Not posted')->toggleable(),
+                Tables\Columns\IconColumn::make('accounting_enabled')
+                    ->label('Accounts linked')->boolean()->toggleable(),
                 Tables\Columns\TextColumn::make('payment_no')
                     ->label('Payment No')
                     ->searchable()
@@ -310,7 +321,7 @@ class PaymentResource extends Resource
                 Actions\BulkActionGroup::make([
                     Actions\DeleteBulkAction::make(),
                     Actions\RestoreBulkAction::make(),
-                    Actions\ForceDeleteBulkAction::make(),
+                    
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

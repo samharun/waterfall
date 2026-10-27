@@ -44,7 +44,7 @@ class SalesReport extends Page
 
     public function getPayments(): Collection
     {
-        return Payment::with(['customer', 'dealer', 'invoice', 'receivedBy'])
+        return Payment::accepted()->with(['customer', 'dealer', 'invoice', 'receivedBy'])
             ->when($this->date_from,      fn ($q) => $q->whereDate('payment_date', '>=', $this->date_from))
             ->when($this->date_until,     fn ($q) => $q->whereDate('payment_date', '<=', $this->date_until))
             ->when($this->payment_type,   fn ($q) => $q->where('payment_type', $this->payment_type))

@@ -41,7 +41,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
         $todayDelivered = Order::whereDate('order_date', today())
             ->where('order_status', 'delivered')->count();
 
-        $monthSales = Payment::whereMonth('payment_date', now()->month)
+        $monthSales = Payment::accepted()->whereMonth('payment_date', now()->month)
             ->whereYear('payment_date', now()->year)
             ->sum('amount');
 

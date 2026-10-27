@@ -185,6 +185,13 @@ class DueCollectionResource extends Resource
                             ->required()
                             ->minValue(0.01),
 
+                        Forms\Components\Select::make('payment_account_id')
+                            ->label('Deposit / cash account')
+                            ->options(fn () => \App\Models\PaymentAccount::active()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->nullable()
+                            ->helperText('Leave blank to use a collection holding account. Select the destination only when the money is received there.'),
+
                         Forms\Components\Select::make('payment_method')
                             ->label('Payment Method')
                             ->options(Payment::methodLabels())
@@ -200,7 +207,7 @@ class DueCollectionResource extends Resource
                             ->options(Payment::collectionStatusLabels())
                             ->default('pending_review')
                             ->required()
-                            ->helperText('Set to "Accepted" once cash is verified and handed to billing.'),
+                            ->helperText('Accepted confirms customer payment. Record each customer payment once; do not create another payment for a staff cash handover.'),
                     ]),
 
                     Forms\Components\Textarea::make('remarks')
@@ -215,6 +222,10 @@ class DueCollectionResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('accountTransaction.paymentAccount.name')
+                    ->label('Posted account')->placeholder('Not posted')->toggleable(),
+                Tables\Columns\IconColumn::make('accounting_enabled')
+                    ->label('Accounts linked')->boolean()->toggleable(),
                 Tables\Columns\TextColumn::make('payment_no')
                     ->label('Collection No')
                     ->searchable()
@@ -386,7 +397,7 @@ class DueCollectionResource extends Resource
 
                     Actions\DeleteBulkAction::make(),
                     Actions\RestoreBulkAction::make(),
-                    Actions\ForceDeleteBulkAction::make(),
+                    
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

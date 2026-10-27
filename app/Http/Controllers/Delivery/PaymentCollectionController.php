@@ -69,7 +69,7 @@ class PaymentCollectionController extends Controller
         ]);
 
         // Validate invoice ownership and overpayment
-        if ($validated['invoice_id']) {
+        if (! empty($validated['invoice_id'])) {
             $invoice = Invoice::find($validated['invoice_id']);
 
             $partyMatch = $order?->order_type === 'customer'
@@ -132,7 +132,7 @@ class PaymentCollectionController extends Controller
             'remarks'        => ['nullable', 'string', 'max:500'],
         ]);
 
-        if ($validated['invoice_id']) {
+        if (! empty($validated['invoice_id'])) {
             $invoice = Invoice::find($validated['invoice_id']);
             if ((float) $validated['amount'] > (float) $invoice->due_amount) {
                 return back()->withErrors(['amount' => "Amount exceeds invoice due (৳{$invoice->due_amount})."])->withInput();

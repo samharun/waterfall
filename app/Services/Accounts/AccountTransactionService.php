@@ -46,6 +46,7 @@ class AccountTransactionService
     {
         return DB::transaction(function () use ($transaction, $data, $allowOverdraft) {
             $transaction = AccountTransaction::query()->lockForUpdate()->findOrFail($transaction->id);
+            $this->guardCollectionEntry($transaction);
             $oldApproved = $transaction->status === 'approved';
             $oldData = $transaction->replicate();
 
@@ -70,8 +71,13 @@ class AccountTransactionService
     {
         return DB::transaction(function () use ($transaction) {
             $transaction = AccountTransaction::query()->lockForUpdate()->findOrFail($transaction->id);
+            $this->guardCollectionEntry($transaction);
 
             if ($transaction->status !== 'approved') {
+
+                if ($transaction->transaction_type === 'expense') {
+                    $this->guardExpenseBalance(array_merge($transaction->toArray(), ['status' => 'approved']));
+                }
                 $transaction->forceFill([
                     'status' => 'approved',
                     'approved_by' => Auth::id(),
@@ -89,6 +95,7 @@ class AccountTransactionService
     {
         return DB::transaction(function () use ($transaction) {
             $transaction = AccountTransaction::query()->lockForUpdate()->findOrFail($transaction->id);
+            $this->guardCollectionEntry($transaction);
 
             if ($transaction->status === 'approved') {
                 $this->reverseTransaction($transaction);
@@ -108,6 +115,7 @@ class AccountTransactionService
     {
         DB::transaction(function () use ($transaction) {
             $transaction = AccountTransaction::query()->lockForUpdate()->findOrFail($transaction->id);
+            $this->guardCollectionEntry($transaction);
 
             if ($transaction->status === 'approved') {
                 $this->reverseTransaction($transaction);
@@ -119,6 +127,9 @@ class AccountTransactionService
 
     public function reverseTransaction(AccountTransaction $transaction): void
     {
+        if ($transaction->transaction_type === 'transfer') {
+            return;
+        }
         $direction = $transaction->transaction_type === 'income' ? -1 : 1;
         $this->updateAccount((int) $transaction->payment_account_id, $direction * (float) $transaction->amount);
     }
@@ -165,8 +176,9 @@ class AccountTransactionService
         $data['transaction_no'] = $data['transaction_no'] ?? $transaction?->transaction_no ?? $this->generateTransactionNo($date);
         $data['transaction_date'] = Carbon::parse($date)->toDateString();
         $data['transaction_type'] = $data['transaction_type'] ?? $transaction?->transaction_type;
+        $data['payment_account_id'] = $data['payment_account_id'] ?? $transaction?->payment_account_id;
         $data['status'] = $status;
-        $data['amount'] = round((float) ($data['amount'] ?? 0), 2);
+        $data['amount'] = round((float) ($data['amount'] ?? $transaction?->amount ?? 0), 2);
         $data['created_by'] = $data['created_by'] ?? $transaction?->created_by ?? Auth::id();
         $data['updated_by'] = Auth::id();
 
@@ -201,5 +213,29 @@ class AccountTransactionService
         $account = PaymentAccount::query()->lockForUpdate()->findOrFail($paymentAccountId);
         $account->current_balance = round((float) $account->current_balance + $amount, 2);
         $account->save();
+    }
+
+    protected function guardCollectionEntry(AccountTransaction $transaction): void
+    {
+        if ($transaction->payment_id) {
+            throw ValidationException::withMessages(['payment' => 'This income is linked to a collection. Edit or delete the original payment instead.']);
+        }
+    }
+
+    public function restoreTransaction(AccountTransaction $transaction): bool
+    {
+        return DB::transaction(function () use ($transaction) {
+            $transaction = AccountTransaction::withTrashed()->lockForUpdate()->findOrFail($transaction->id);
+            $this->guardCollectionEntry($transaction);
+            if (! $transaction->trashed()) {
+                return true;
+            }
+            $this->guardExpenseBalance($transaction->toArray());
+            $transaction->restore();
+            if ($transaction->status === 'approved') {
+                $this->updatePaymentAccountBalance($transaction);
+            }
+            return true;
+        });
     }
 }

@@ -77,7 +77,7 @@ class DeliveryManagerController extends Controller
                     'assigned_count' => $deliveries->count(),
                     'delivered_count' => $deliveries->whereIn('delivery_status', ['delivered', 'partial_delivered'])->count(),
                     'pending_count' => $deliveries->whereIn('delivery_status', ['pending', 'assigned', 'in_progress'])->count(),
-                    'collection_amount' => (float) $deliveries->sum(fn (Delivery $delivery) => $delivery->payments->sum('amount')),
+                    'collection_amount' => (float) $deliveries->sum(fn (Delivery $delivery) => $delivery->payments->where('collection_status', 'accepted')->sum('amount')),
                     'jar_delivered' => (int) $deliveries->whereIn('delivery_status', ['delivered', 'partial_delivered'])->sum(fn (Delivery $delivery) => $this->jarQuantity($delivery)),
                     'empty_jar_returned' => 0,
                 ];
@@ -539,7 +539,7 @@ class DeliveryManagerController extends Controller
             'jar_quantity' => $this->jarQuantity($delivery),
             'empty_jar_return' => 0,
             'payable_amount' => (float) ($order?->total_amount ?? 0),
-            'paid_amount' => (float) $delivery->payments->sum('amount'),
+            'paid_amount' => (float) $delivery->payments->where('collection_status', 'accepted')->sum('amount'),
             'due_amount' => $this->dueAmount($delivery),
             'preferred_time' => $this->preferredTime($delivery),
             'status' => $this->mobileStatus($delivery->delivery_status),
@@ -557,7 +557,7 @@ class DeliveryManagerController extends Controller
     private function dueAmount(Delivery $delivery): float
     {
         $total = (float) ($delivery->order?->total_amount ?? 0);
-        $paid = (float) $delivery->payments->sum('amount');
+        $paid = (float) $delivery->payments->where('collection_status', 'accepted')->sum('amount');
 
         return max(0, $total - $paid);
     }

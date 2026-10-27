@@ -12,7 +12,7 @@ class AccountTransaction extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'transaction_no', 'transaction_date', 'transaction_type', 'account_category_id',
+        'payment_id', 'transaction_no', 'transaction_date', 'transaction_type', 'account_category_id',
         'payment_account_id', 'amount', 'paid_to', 'received_from', 'reference_no',
         'description', 'attachment', 'status', 'approved_by', 'approved_at',
         'created_by', 'updated_by',

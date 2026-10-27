@@ -60,7 +60,7 @@ class CustomerLedger extends Page implements HasForms
         }
 
         // Payment entries (Credit)
-        $payments = \App\Models\Payment::where('customer_id', $this->customer_id)
+        $payments = \App\Models\Payment::accepted()->where('customer_id', $this->customer_id)
             ->when($this->date_from,  fn ($q) => $q->whereDate('payment_date', '>=', $this->date_from))
             ->when($this->date_until, fn ($q) => $q->whereDate('payment_date', '<=', $this->date_until))
             ->get();

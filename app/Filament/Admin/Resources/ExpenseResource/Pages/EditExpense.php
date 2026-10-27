@@ -22,7 +22,7 @@ class EditExpense extends EditRecord
     {
         return [
             Actions\DeleteAction::make()->using(fn (AccountTransaction $record) => app(AccountTransactionService::class)->deleteTransaction($record)),
-            Actions\RestoreAction::make(),
+            Actions\RestoreAction::make()->using(fn (AccountTransaction $record) => app(AccountTransactionService::class)->restoreTransaction($record)),
         ];
     }
 }
