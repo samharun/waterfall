@@ -28,6 +28,7 @@ class AccountsDashboard extends Page
         $monthEnd = now()->endOfMonth();
 
         $approved = AccountTransaction::approved();
+        $collections = app(\App\Services\Accounts\CollectionSummaryService::class)->totals();
 
         $todayIncome = (clone $approved)->where('transaction_type', 'income')->whereDate('transaction_date', $today)->sum('amount');
         $todayExpense = (clone $approved)->where('transaction_type', 'expense')->whereDate('transaction_date', $today)->sum('amount');
@@ -35,6 +36,9 @@ class AccountsDashboard extends Page
         $monthExpense = (clone $approved)->where('transaction_type', 'expense')->whereBetween('transaction_date', [$monthStart, $monthEnd])->sum('amount');
 
         return [
+            'Collected Today' => $collections['today'],
+            'Collected This Month' => $collections['month'],
+            'Total Collected' => $collections['all_time'],
             'Opening Balance' => PaymentAccount::sum('opening_balance'),
             'Today Income' => $todayIncome,
             'Today Expense' => $todayExpense,

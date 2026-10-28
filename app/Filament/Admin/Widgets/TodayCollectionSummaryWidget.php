@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 /**
  * Medium Priority Widget 2: Today's Collection Summary
  *
- * Shows cash collected today by delivery staff,
+ * Shows accepted customer/dealer payments from all collectors today,
  * broken down by zone and payment method.
  */
 class TodayCollectionSummaryWidget extends Widget
@@ -35,10 +35,9 @@ class TodayCollectionSummaryWidget extends Widget
     {
         $today = Carbon::today();
 
-        // All payments collected by delivery staff today
-        $payments = Payment::with(['delivery.zone'])
+        // All collection sources, including office and delivery staff.
+        $payments = Payment::with(['delivery.zone', 'customer.zone', 'dealer.zone'])
             ->whereDate('payment_date', $today)
-            ->where('collection_source', 'delivery_staff')
             ->where('collection_status', 'accepted')
             ->get();
 
@@ -47,7 +46,8 @@ class TodayCollectionSummaryWidget extends Widget
 
         // By payment method
         $byMethod = $payments->groupBy('payment_method')
-            ->map(fn ($group) => [
+            ->map(fn ($group, $method) => [
+                'payment_method' => $method,
                 'count' => $group->count(),
                 'amount' => (float) $group->sum('amount'),
             ])
@@ -55,7 +55,7 @@ class TodayCollectionSummaryWidget extends Widget
             ->values();
 
         // By zone
-        $byZone = $payments->groupBy(fn ($p) => $p->delivery?->zone?->name ?? 'Unknown')
+        $byZone = $payments->groupBy(fn ($p) => $p->delivery?->zone?->name ?? $p->customer?->zone?->name ?? $p->dealer?->zone?->name ?? 'Unassigned')
             ->map(fn ($group, $zoneName) => [
                 'zone' => $zoneName,
                 'count' => $group->count(),
@@ -66,7 +66,6 @@ class TodayCollectionSummaryWidget extends Widget
 
         // Pending review (collected but not yet accepted)
         $pendingReview = Payment::whereDate('payment_date', $today)
-            ->where('collection_source', 'delivery_staff')
             ->where('collection_status', 'pending_review')
             ->sum('amount');
 

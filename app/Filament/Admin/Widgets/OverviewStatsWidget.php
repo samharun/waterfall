@@ -23,7 +23,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
 
     protected ?string $heading = 'Business snapshot';
 
-    protected ?string $description = 'Customers, orders, and sales at a glance';
+    protected ?string $description = 'Customers, orders, and accepted customer/dealer collections';
 
     protected static bool $isDiscovered = false;
 
@@ -41,11 +41,18 @@ class OverviewStatsWidget extends StatsOverviewWidget
         $todayDelivered = Order::whereDate('order_date', today())
             ->where('order_status', 'delivered')->count();
 
-        $monthSales = Payment::accepted()->whereMonth('payment_date', now()->month)
-            ->whereYear('payment_date', now()->year)
-            ->sum('amount');
+        $collections = app(\App\Services\Accounts\CollectionSummaryService::class)->totals();
 
         return [
+            Stat::make('Collected Today', '৳ '.number_format($collections['today'], 2))
+                ->description('Accepted payments · all collectors')
+                ->icon('heroicon-o-banknotes')->color('success'),
+            Stat::make('Collected This Month', '৳ '.number_format($collections['month'], 2))
+                ->description(Carbon::now()->format('F Y').' · accepted payments')
+                ->icon('heroicon-o-calendar-days')->color('success'),
+            Stat::make('Total Collected', '৳ '.number_format($collections['all_time'], 2))
+                ->description('All time · accepted customer/dealer payments')
+                ->icon('heroicon-o-banknotes')->color('success'),
             Stat::make('Active Customers', $activeCustomers)
                 ->description('Approved customers')
                 ->icon('heroicon-o-users')
@@ -71,10 +78,6 @@ class OverviewStatsWidget extends StatsOverviewWidget
                 ->icon('heroicon-o-check-badge')
                 ->color('success'),
 
-            Stat::make('This Month Sales', '৳ '.number_format((float) $monthSales, 2))
-                ->description(Carbon::now()->format('F Y'))
-                ->icon('heroicon-o-banknotes')
-                ->color('success'),
         ];
     }
 }

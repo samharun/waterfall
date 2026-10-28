@@ -26,6 +26,19 @@
 </div>
 
 {{-- Today's snapshot --}}
+<section aria-label="Customer and dealer collections" style="margin-bottom:20px">
+    <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:#0f172a">Customer &amp; Dealer Collections</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+        @foreach(['Collected Today', 'Collected This Month', 'Total Collected'] as $key)
+            <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:16px">
+                <div style="font-size:12px;font-weight:600;color:#047857">{{ $key }}{{ $key === 'Total Collected' ? ' (All Time)' : '' }}</div>
+                <div style="font-size:26px;font-weight:800;color:#065f46;margin-top:6px">৳ {{ number_format((float) $stats[$key], 2) }}</div>
+            </div>
+        @endforeach
+    </div>
+    <p style="font-size:12px;color:#64748b;margin-top:8px">Accepted payments from all collectors, by payment date. Includes staff-held money and historical receipts awaiting Accounts reconciliation. Pending and rejected payments are excluded. These totals are not the available cash balance.</p>
+</section>
+
 <div style="margin-bottom:8px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em">Today's Snapshot</div>
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
     @foreach(['Opening Balance','Current Balance','Today Income','Today Expense'] as $key)

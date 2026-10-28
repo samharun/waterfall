@@ -32,7 +32,7 @@
             <div>
                 <div style="font-size:11px;color:#059669;font-weight:500;margin-bottom:3px">Total Collected Today</div>
                 <div style="font-size:28px;font-weight:800;color:#065f46">৳ {{ number_format($data['total_collected'], 2) }}</div>
-                <div style="font-size:11px;color:#6b7280;margin-top:2px">{{ $data['total_count'] }} payment{{ $data['total_count'] !== 1 ? 's' : '' }} by delivery staff</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:2px">{{ $data['total_count'] }} accepted payment{{ $data['total_count'] !== 1 ? 's' : '' }} · office and delivery collections</div>
             </div>
             @if($data['pending_review'] > 0)
                 <div style="text-align:right">
