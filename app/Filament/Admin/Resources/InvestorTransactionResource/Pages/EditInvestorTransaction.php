@@ -42,6 +42,6 @@ class EditInvestorTransaction extends EditRecord
     }
     protected function getHeaderActions(): array
     {
-        return [Actions\DeleteAction::make()->after(function (InvestorTransaction $record) { if ($record->accountTransaction) app(AccountTransactionService::class)->deleteTransaction($record->accountTransaction); $record->investor?->recalculateBalance(); }), Actions\RestoreAction::make()];
+        return [Actions\DeleteAction::make(), Actions\RestoreAction::make()];
     }
 }

@@ -8,7 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InvestorTransaction extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes { restore as protected restoreWithoutAccounting; }
+    use \App\Models\Concerns\HasAccountingLifecycle;
+
+    public function restore()
+    {
+        return $this->restoreWithAccounting();
+    }
 
     protected $fillable = [
         'investor_id', 'transaction_date', 'transaction_type', 'amount',

@@ -41,7 +41,7 @@ class PaymentAccountResource extends Resource
                         Forms\Components\Select::make('type')->options(PaymentAccount::typeLabels())->required(),
                         Forms\Components\TextInput::make('account_no')->maxLength(255),
                         Forms\Components\TextInput::make('opening_balance')->numeric()->prefix('BDT')->default(0)->minValue(0),
-                        Forms\Components\TextInput::make('current_balance')->numeric()->prefix('BDT')->default(0)->minValue(0)->helperText('Updated by approved account transactions.'),
+                        Forms\Components\TextInput::make('current_balance')->numeric()->prefix('BDT')->disabled()->dehydrated(false)->visibleOn('edit')->helperText('Opening balance plus approved account transactions.'),
                         Forms\Components\Toggle::make('status')->default(true),
                     ]),
                 ]),

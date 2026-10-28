@@ -65,12 +65,7 @@ class EditJarPurchase extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->after(function (JarPurchase $record) {
-                if ($record->accountTransaction) {
-                    app(AccountTransactionService::class)->deleteTransaction($record->accountTransaction);
-                }
-                $record->supplier?->recalculateDue();
-            }),
+            Actions\DeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
     }

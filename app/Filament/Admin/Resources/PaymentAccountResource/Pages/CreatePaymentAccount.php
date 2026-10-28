@@ -12,6 +12,7 @@ class CreatePaymentAccount extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        unset($data['current_balance']);
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 

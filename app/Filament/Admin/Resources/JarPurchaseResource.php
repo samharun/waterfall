@@ -84,12 +84,7 @@ class JarPurchaseResource extends Resource
             ->actions([Actions\ActionGroup::make([
                 Actions\ViewAction::make(),
                 Actions\EditAction::make(),
-                Actions\DeleteAction::make()->after(function (JarPurchase $record) {
-                    if ($record->accountTransaction) {
-                        app(\App\Services\Accounts\AccountTransactionService::class)->deleteTransaction($record->accountTransaction);
-                    }
-                    $record->supplier?->recalculateDue();
-                }),
+                Actions\DeleteAction::make(),
             ])])
             ->defaultSort('purchase_date', 'desc');
     }

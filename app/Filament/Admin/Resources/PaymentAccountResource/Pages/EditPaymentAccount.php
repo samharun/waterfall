@@ -13,6 +13,7 @@ class EditPaymentAccount extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        unset($data['current_balance']);
         $data['updated_by'] = Auth::id();
 
         return $data;

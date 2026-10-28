@@ -34,6 +34,21 @@ class ExpenseResource extends Resource
     protected static ?string $navigationLabel = 'Expenses';
     protected static ?int $navigationSort = 3;
 
+    public static function canEdit($record): bool
+    {
+        return ! ($record?->hasSourceRecord() ?? false) && (auth()->user()?->can(static::$editPermission) ?? false);
+    }
+
+    public static function canDelete($record): bool
+    {
+        return ! ($record?->hasSourceRecord() ?? false) && (auth()->user()?->can(static::$deletePermission) ?? false);
+    }
+
+    public static function canRestore(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return ! $record->hasSourceRecord() && parent::canRestore($record);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

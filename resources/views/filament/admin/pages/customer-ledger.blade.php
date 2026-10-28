@@ -4,8 +4,9 @@
     $entries     = $this->getLedgerEntries();
     $totalDebit  = $entries->sum('debit');
     $totalCredit = $entries->sum('credit');
-    $netBalance  = $totalDebit - $totalCredit;
-    $balance     = 0.0;
+    $openingBalance = $this->getOpeningBalance();
+    $netBalance  = $openingBalance + $totalDebit - $totalCredit;
+    $balance     = $openingBalance;
 @endphp
 
 {{-- Customer Selector --}}
@@ -77,6 +78,7 @@
 </div>
 
 {{-- Ledger Table --}}
+<p>Opening balance: ৳ {{ number_format($openingBalance, 2) }}. Debits reflect delivered orders; payments are accepted collections.</p>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f3f4f6;background:#f9fafb">
         <span style="font-size:14px;font-weight:600;color:#111827">Ledger Entries</span>
@@ -103,7 +105,7 @@
                         </td>
                         <td style="padding:10px 16px;font-family:monospace;font-size:11px;color:#6b7280">{{ $entry['reference'] }}</td>
                         <td style="padding:10px 16px">
-                            <span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;{{ $entry['type'] === 'invoice' ? 'background:#fee2e2;color:#b91c1c' : 'background:#dcfce7;color:#15803d' }}">
+                            <span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;{{ $entry['type'] === 'order' ? 'background:#fee2e2;color:#b91c1c' : 'background:#dcfce7;color:#15803d' }}">
                                 {{ $entry['description'] }}
                             </span>
                         </td>

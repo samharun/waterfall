@@ -76,6 +76,9 @@ class Order extends Model
 
         // Auto-create a pending delivery when an order is confirmed.
         static::updated(function (Order $order) {
+            if ($order->wasChanged('total_amount')) {
+                $order->syncPaymentStatus();
+            }
             if (! $order->wasChanged('order_status')) {
                 return;
             }
@@ -254,6 +257,15 @@ class Order extends Model
         }
 
         return (int) $this->items()->sum('quantity');
+    }
+
+    public function syncPaymentStatus(): void
+    {
+        $paid = (float) $this->payments()->accepted()->sum('amount');
+        $status = $paid <= 0 ? 'unpaid' : ($paid >= (float) $this->total_amount ? 'paid' : 'partial');
+        static::whereKey($this->id)->update(['payment_status' => $status]);
+        $this->setAttribute('payment_status', $status);
+        $this->syncOriginalAttribute('payment_status');
     }
 
     public function markConfirmed(): void

@@ -35,6 +35,6 @@ class EditMaintenanceCost extends EditRecord
     }
     protected function getHeaderActions(): array
     {
-        return [Actions\DeleteAction::make()->after(function (MaintenanceCost $record) { if ($record->accountTransaction) app(AccountTransactionService::class)->deleteTransaction($record->accountTransaction); }), Actions\RestoreAction::make()];
+        return [Actions\DeleteAction::make(), Actions\RestoreAction::make()];
     }
 }

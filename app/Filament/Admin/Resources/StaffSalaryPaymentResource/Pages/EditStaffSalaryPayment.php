@@ -59,11 +59,7 @@ class EditStaffSalaryPayment extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->after(function (StaffSalaryPayment $record) {
-                if ($record->accountTransaction) {
-                    app(AccountTransactionService::class)->deleteTransaction($record->accountTransaction);
-                }
-            }),
+            Actions\DeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
     }

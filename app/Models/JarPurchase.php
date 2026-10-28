@@ -8,7 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JarPurchase extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes { restore as protected restoreWithoutAccounting; }
+    use \App\Models\Concerns\HasAccountingLifecycle;
+
+    public function restore()
+    {
+        return $this->restoreWithAccounting();
+    }
 
     protected $fillable = [
         'purchase_date', 'supplier_id', 'supplier_name', 'jar_type', 'quantity',
@@ -24,6 +30,17 @@ class JarPurchase extends Model
         'paid_amount' => 'decimal:2',
         'due_amount' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (JarPurchase $purchase) {
+            if ((float) $purchase->paid_amount > 0 && ! $purchase->payment_account_id) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'payment_account_id' => 'Select the payment account used for this purchase.',
+                ]);
+            }
+        });
+    }
 
     public function supplier(): BelongsTo
     {

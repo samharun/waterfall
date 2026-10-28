@@ -45,6 +45,28 @@ class DueCollectionResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    public static function collectorOptions(): array
+    {
+        return User::whereIn('role', ['delivery_staff', 'delivery_manager', 'billing_officer', 'admin', 'super_admin'])
+            ->orderBy('name')->get()
+            ->mapWithKeys(fn (User $user) => [$user->id => $user->name.' — '.(User::ROLES[$user->role] ?? $user->role)])
+            ->all();
+    }
+
+    public static function deliveryOptions(null|int|string $collectorId): array
+    {
+        $collector = $collectorId ? User::find($collectorId) : null;
+
+        return Delivery::with(['order.customer', 'order.dealer'])
+            ->whereIn('delivery_status', ['pending', 'assigned', 'in_progress', 'delivered'])
+            ->whereHas('order', fn (Builder $query) => $query->where('order_status', '!=', 'cancelled'))
+            ->when($collector?->role === 'delivery_staff', fn (Builder $query) => $query->where('delivery_staff_id', $collector->id))
+            ->orderByDesc('id')->limit(100)->get()
+            ->mapWithKeys(fn (Delivery $delivery) => [
+                $delivery->id => $delivery->delivery_no.' — '.($delivery->order?->customer?->name ?? $delivery->order?->dealer?->name ?? 'Unknown').' ('.str_replace('_', ' ', $delivery->delivery_status).')',
+            ])->all();
+    }
+
     public static function getNavigationBadge(): ?string
     {
         $count = Payment::where('collection_source', 'delivery_staff')
@@ -78,45 +100,32 @@ class DueCollectionResource extends Resource
                         // Which delivery staff handed the cash
                         Forms\Components\Select::make('collected_from_staff_id')
                             ->label('Collected From (Staff)')
-                            ->options(fn () => User::deliveryStaff()->orderBy('name')
-                                ->get()
-                                ->mapWithKeys(fn (User $u) => [$u->id => $u->name])
-                            )
+                            ->options(fn () => static::collectorOptions())
                             ->searchable()
+                            ->preload()
+                            ->helperText('Delivery Staff, Delivery Manager, Billing Officer, Admin or Super Admin who collected the payment.')
                             ->required()
                             ->live()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 // Auto-fill delivery select when staff changes
                                 $set('delivery_id', null);
+                                $set('order_id', null);
                             }),
+
+                        Forms\Components\Hidden::make('order_id'),
 
                         // Optionally link to a specific delivery
                         Forms\Components\Select::make('delivery_id')
                             ->label('Related Delivery (optional)')
-                            ->options(function (Get $get) {
-                                $staffId = $get('collected_from_staff_id');
-                                $query = Delivery::with(['order.customer', 'order.dealer'])
-                                    ->where('delivery_status', 'delivered');
-
-                                if ($staffId) {
-                                    $query->where('delivery_staff_id', $staffId);
-                                }
-
-                                return $query->orderByDesc('delivered_at')
-                                    ->limit(100)
-                                    ->get()
-                                    ->mapWithKeys(function (Delivery $d) {
-                                        $party = $d->order?->customer
-                                            ? $d->order->customer->name
-                                            : ($d->order?->dealer?->name ?? '—');
-                                        return [$d->id => "{$d->delivery_no} — {$party}"];
-                                    });
-                            })
+                            ->options(fn (Get $get) => static::deliveryOptions($get('collected_from_staff_id')))
                             ->searchable()
+                            ->preload()
+                            ->helperText('Active or completed deliveries. A delivery-staff selection shows only their assigned deliveries.')
                             ->nullable()
                             ->live()
-                            ->afterStateUpdated(function ($state, Set $set) {
+                            ->afterStateUpdated(function ($state, Get $get, Set $set) {
                                 if (! $state) {
+                                    $set('order_id', null);
                                     return;
                                 }
                                 $delivery = Delivery::with(['order.customer', 'order.dealer'])->find($state);
@@ -135,7 +144,7 @@ class DueCollectionResource extends Resource
                                     $set('customer_id', null);
                                 }
                                 // Pre-fill staff if not already set
-                                if ($delivery->delivery_staff_id) {
+                                if (! $get('collected_from_staff_id') && $delivery->delivery_staff_id) {
                                     $set('collected_from_staff_id', $delivery->delivery_staff_id);
                                 }
                             }),
@@ -310,7 +319,7 @@ class DueCollectionResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('collected_from_staff_id')
                     ->label('Staff')
-                    ->options(fn () => User::deliveryStaff()->orderBy('name')->pluck('name', 'id'))
+                    ->options(fn () => static::collectorOptions())
                     ->searchable(),
 
                 Tables\Filters\SelectFilter::make('collection_status')

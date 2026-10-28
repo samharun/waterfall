@@ -30,6 +30,30 @@ class PaymentAccount extends Model
                 $account->current_balance = $account->opening_balance ?? 0;
             }
         });
+
+        static::deleting(function (PaymentAccount $account) {
+            if ((float) $account->current_balance !== 0.0 || $account->transactions()->withTrashed()->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'payment_account_id' => 'Accounts with balances or transaction history cannot be deleted. Deactivate the account instead.',
+                ]);
+            }
+        });
+    }
+
+    public function save(array $options = [])
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($options) {
+            if ($this->exists && $this->isDirty('opening_balance')) {
+                $changes = $this->getDirty();
+                $fresh = static::withTrashed()->lockForUpdate()->findOrFail($this->id);
+                $changes['current_balance'] = round((float) $fresh->current_balance
+                    + (float) $changes['opening_balance'] - (float) $fresh->opening_balance, 2);
+                $this->setRawAttributes($fresh->getAttributes(), true);
+                $this->forceFill($changes);
+            }
+
+            return parent::save($options);
+        });
     }
 
     public function transactions(): HasMany

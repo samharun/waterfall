@@ -66,6 +66,9 @@ class Payment extends Model
             foreach (array_unique(array_filter([$payment->invoice_id, $payment->getOriginal('invoice_id')])) as $id) {
                 Invoice::find($id)?->syncFromPayments();
             }
+            foreach (array_unique(array_filter([$payment->order_id, $payment->getOriginal('order_id')])) as $id) {
+                Order::find($id)?->syncPaymentStatus();
+            }
             foreach (array_unique(array_filter([$payment->customer_id, $payment->getOriginal('customer_id')])) as $id) {
                 Customer::find($id)?->recalculateCurrentDue();
             }
@@ -115,7 +118,7 @@ class Payment extends Model
 
     protected function lockRelatedBalances(): void
     {
-        foreach (['customer_id' => Customer::class, 'dealer_id' => Dealer::class, 'invoice_id' => Invoice::class] as $key => $model) {
+        foreach (['customer_id' => Customer::class, 'dealer_id' => Dealer::class, 'invoice_id' => Invoice::class, 'order_id' => Order::class] as $key => $model) {
             $ids = array_unique(array_filter([$this->$key, $this->getOriginal($key)]));
             $model::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get();
         }

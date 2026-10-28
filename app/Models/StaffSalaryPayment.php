@@ -8,7 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StaffSalaryPayment extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes { restore as protected restoreWithoutAccounting; }
+    use \App\Models\Concerns\HasAccountingLifecycle;
+
+    public function restore()
+    {
+        return $this->restoreWithAccounting();
+    }
 
     protected $fillable = [
         'staff_id', 'staff_name', 'salary_month', 'basic_salary', 'advance_deduction',

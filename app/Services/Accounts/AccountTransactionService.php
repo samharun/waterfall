@@ -74,6 +74,7 @@ class AccountTransactionService
             $this->guardCollectionEntry($transaction);
 
             if ($transaction->status !== 'approved') {
+                $this->prepareTransactionData(['status' => 'approved'], $transaction);
 
                 if ($transaction->transaction_type === 'expense') {
                     $this->guardExpenseBalance(array_merge($transaction->toArray(), ['status' => 'approved']));
@@ -182,6 +183,20 @@ class AccountTransactionService
         $data['created_by'] = $data['created_by'] ?? $transaction?->created_by ?? Auth::id();
         $data['updated_by'] = Auth::id();
 
+        if (! in_array($data['transaction_type'], ['income', 'expense'], true)
+            || ! in_array($status, ['pending', 'approved', 'rejected'], true)
+            || ! is_finite($data['amount']) || $data['amount'] <= 0) {
+            throw ValidationException::withMessages(['amount' => 'Enter a positive amount and a valid income/expense status.']);
+        }
+        $account = PaymentAccount::query()->lockForUpdate()->find($data['payment_account_id']);
+        if (! $account || ! $account->status) {
+            throw ValidationException::withMessages(['payment_account_id' => 'Select an active payment account.']);
+        }
+        $categoryId = $data['account_category_id'] ?? $transaction?->account_category_id;
+        if ($categoryId && ! AccountCategory::active()->whereKey($categoryId)->where('type', $data['transaction_type'])->exists()) {
+            throw ValidationException::withMessages(['account_category_id' => 'Select an active category matching the transaction type.']);
+        }
+
         if ($status === 'approved') {
             $data['approved_by'] = $data['approved_by'] ?? $transaction?->approved_by ?? Auth::id();
             $data['approved_at'] = $data['approved_at'] ?? $transaction?->approved_at ?? now();
@@ -230,6 +245,7 @@ class AccountTransactionService
             if (! $transaction->trashed()) {
                 return true;
             }
+            $this->prepareTransactionData([], $transaction);
             $this->guardExpenseBalance($transaction->toArray());
             $transaction->restore();
             if ($transaction->status === 'approved') {

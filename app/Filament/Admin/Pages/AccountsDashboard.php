@@ -45,7 +45,7 @@ class AccountsDashboard extends Page
             'Current Balance' => PaymentAccount::sum('current_balance'),
             'This Month Income' => $monthIncome,
             'This Month Expense' => $monthExpense,
-            'Net Profit/Loss' => (float) $monthIncome - (float) $monthExpense,
+            'Net Cash Flow' => (float) $monthIncome - (float) $monthExpense,
             'Total Investor Fund' => Investor::sum('total_invested'),
             'Supplier Due' => Supplier::sum('current_due'),
             'Staff Salary Paid This Month' => StaffSalaryPayment::whereBetween('payment_date', [$monthStart, $monthEnd])->sum('paid_amount'),

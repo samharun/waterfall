@@ -54,6 +54,20 @@ class AccountTransaction extends Model
         return $query->where('status', 'approved');
     }
 
+    public function hasSourceRecord(): bool
+    {
+        if ($this->payment_id) {
+            return true;
+        }
+        foreach ([StaffSalaryPayment::class, JarPurchase::class, InvestorTransaction::class, MaintenanceCost::class] as $model) {
+            if ($model::withTrashed()->where('account_transaction_id', $this->id)->exists()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function typeLabels(): array
     {
         return ['income' => 'Income', 'expense' => 'Expense', 'transfer' => 'Transfer'];

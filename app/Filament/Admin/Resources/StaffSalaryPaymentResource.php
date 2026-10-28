@@ -91,11 +91,7 @@ class StaffSalaryPaymentResource extends Resource
             ->actions([Actions\ActionGroup::make([
                 Actions\ViewAction::make(),
                 Actions\EditAction::make(),
-                Actions\DeleteAction::make()->after(function (StaffSalaryPayment $record) {
-                    if ($record->accountTransaction) {
-                        app(\App\Services\Accounts\AccountTransactionService::class)->deleteTransaction($record->accountTransaction);
-                    }
-                }),
+                Actions\DeleteAction::make(),
             ])])
             ->defaultSort('payment_date', 'desc');
     }

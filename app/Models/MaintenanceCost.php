@@ -8,7 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MaintenanceCost extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes { restore as protected restoreWithoutAccounting; }
+    use \App\Models\Concerns\HasAccountingLifecycle;
+
+    public function restore()
+    {
+        return $this->restoreWithAccounting();
+    }
 
     protected $fillable = [
         'maintenance_date', 'business_asset_id', 'maintenance_type', 'description',

@@ -41,21 +41,22 @@ class CustomerLedger extends Page implements HasForms
 
         $entries = collect();
 
-        // Invoice entries (Debit)
-        $invoices = \App\Models\Invoice::where('customer_id', $this->customer_id)
-            ->whereNotIn('invoice_status', ['draft', 'cancelled'])
-            ->when($this->date_from,  fn ($q) => $q->whereDate('invoice_date', '>=', $this->date_from))
-            ->when($this->date_until, fn ($q) => $q->whereDate('invoice_date', '<=', $this->date_until))
+        // Match the delivered-order basis used by Customer::recalculateCurrentDue.
+        // Monthly invoices can carry previous dues and must not be counted again.
+        $orders = \App\Models\Order::forCustomer($this->customer_id)
+            ->where('order_status', 'delivered')
+            ->when($this->date_from,  fn ($q) => $q->whereDate('order_date', '>=', $this->date_from))
+            ->when($this->date_until, fn ($q) => $q->whereDate('order_date', '<=', $this->date_until))
             ->get();
 
-        foreach ($invoices as $inv) {
+        foreach ($orders as $order) {
             $entries->push([
-                'date'        => $inv->invoice_date,
-                'reference'   => $inv->invoice_no,
-                'description' => 'Invoice',
-                'debit'       => (float) $inv->total_amount,
+                'date'        => $order->order_date,
+                'reference'   => $order->order_no,
+                'description' => 'Delivered order',
+                'debit'       => (float) $order->total_amount,
                 'credit'      => 0.0,
-                'type'        => 'invoice',
+                'type'        => 'order',
             ]);
         }
 
@@ -83,5 +84,18 @@ class CustomerLedger extends Page implements HasForms
     public function getCustomer(): ?Customer
     {
         return $this->customer_id ? Customer::find($this->customer_id) : null;
+    }
+
+    public function getOpeningBalance(): float
+    {
+        if (! $this->customer_id || ! $this->date_from) {
+            return 0.0;
+        }
+        $debit = \App\Models\Order::forCustomer($this->customer_id)
+            ->where('order_status', 'delivered')->whereDate('order_date', '<', $this->date_from)->sum('total_amount');
+        $credit = \App\Models\Payment::accepted()->where('customer_id', $this->customer_id)
+            ->whereDate('payment_date', '<', $this->date_from)->sum('amount');
+
+        return round((float) $debit - (float) $credit, 2);
     }
 }

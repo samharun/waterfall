@@ -66,12 +66,7 @@ class InvestorTransactionResource extends Resource
             ->actions([Actions\ActionGroup::make([
                 Actions\ViewAction::make(),
                 Actions\EditAction::make(),
-                Actions\DeleteAction::make()->after(function (InvestorTransaction $record) {
-                    if ($record->accountTransaction) {
-                        app(\App\Services\Accounts\AccountTransactionService::class)->deleteTransaction($record->accountTransaction);
-                    }
-                    $record->investor?->recalculateBalance();
-                }),
+                Actions\DeleteAction::make(),
             ])])
             ->defaultSort('transaction_date', 'desc');
     }
