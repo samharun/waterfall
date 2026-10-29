@@ -50,6 +50,10 @@ class Order extends Model
     protected static function booted(): void
     {
         static::creating(function (Order $order) {
+            // Persist the creation channel; legacy records deliberately remain unclassified.
+            $order->source_channel = request()->route()
+                ? (request()->is('api/*') ? 'app_api' : (auth()->user()?->isBackOffice() ? 'admin' : 'web'))
+                : 'system';
             if (empty($order->order_no)) {
                 $order->order_no = self::generateOrderNo($order->order_date);
             }
